@@ -85,19 +85,19 @@ class JX {
      * @returns { Promise <any> } Resposta da consulta
      */
     static async consultar (query) {
-    
+
         function respostaConsulta (resposta) {
-    
+
             let arrayResultado = [];
             let dados = typeof resposta === 'string' ? JSON.parse (resposta) : resposta;
-    
+
             if (dados.data) {
                 dados = dados.data.responseBody;
             }
             else if (dados.responseBody) {
                 dados = dados.responseBody;
             }
-    
+
             let nomes = dados.fieldsMetadata || [];
             let valores = dados.rows || [];
 
@@ -110,14 +110,14 @@ class JX {
                     arrayResultado.push (obj);
                 });
             }
-    
+
             return arrayResultado;
         }
-    
+
         const url = `${ window.location.origin }/mge/service.sbr?serviceName=DbExplorerSP.executeQuery&outputType=json`;
         let dadosEnvio = `{ "serviceName": "DbExplorerSP.executeQuery", "requestBody": { "sql": "${ query }" } }`;
         dadosEnvio = JSON.parse (dadosEnvio);
-    
+
         const requisicao = await JX.post (url, dadosEnvio);
 
         return respostaConsulta (requisicao);
@@ -131,15 +131,21 @@ class JX {
      * 
      * @param { any }                                        dados Dados para o processamento do botao
      * @param { { tipo: ['js', 'java'], idBotao: number } } opcoes Opcoes de configuracao para o acionamento remoto.
-     * **tipo**: Se o botao eh em Javascript (JS) ou Java (JAVA), **idBotao**: ID do botao na tabela residente,
-     * **resourceID**: Tela a qual pertence o botao. _Padrao_: `{ tipo: 'js', idBotao: 0 }`
+     * 
+     *                                                             **tipo**: Se o botao eh em Javascript (JS) ou Java (JAVA)
+     * 
+     *                                                             **idBotao**: ID do botao na tabela residente,
+     * 
+     *                                                             **resourceID**: Tela a qual pertence o botao.
+     * 
+     *                                                             _Padrao_: `{ tipo: 'js', idBotao: 0 }`
      * 
      * @returns                                                    Resposta da chamada remota
      */
     static acionarBotao (dados, { tipo, idBotao, resourceID } = { tipo: 'java', idBotao: 0, resourceID: '' }) {
 
         function converterParametro (dadosInternos) {
-    
+
             let novosDados = {
                 params: {
                     param: []
@@ -203,120 +209,131 @@ class JX {
 
 
     /**
-     * Salva o registro atual na base de dados (metodo interno)
+     * Salva (cria ou atualiza) o registro atual na base de dados
      * 
-     * @deprecated
-     * 
-     * @param { any }         dados Dados do registro a ser salvo
-     * @param { string }  instancia Nome da Instancia a receber o registro a ser salvo
-     * @param { any } chavePrimaria Chaves de identificacao do registro caso necessario forcar a atualizacao ou
-     * qual pk o registro devera ter ao ser criado
-     * 
-     * @returns                     Resposta da requisicao de salvamento
-     */
-    static _salvar (dados, instancia, chavePrimaria) {
-
-        function montarDadosEnvio (dadosInterno, instanciaInterna, chavePrimariaInterna) {
-
-            let camposConvertidos = Object.
-                                        keys (dadosInterno).
-                                        reduce ((acumulador, chave) => ({
-                                            ...acumulador,
-                                            [ chave.toUpperCase () ]: {
-                                                $: String (dadosInterno [ chave ])
-                                            }
-                                        }), {});
-
-            var estruturaEnvio = {
-                serviceName: 'CRUDServiceProvider.saveRecord',
-                requestBody: {
-                    dataSet: {
-                        rootEntity: instanciaInterna,
-                        includePresentationFields: 'N',
-                        dataRow: {
-                            localFields: camposConvertidos
-                        },
-                        entity: {
-                            fieldset: {
-                                list: Object.
-                                        keys (dadosInterno).
-                                        map  (nomeCampos =>
-                                                nomeCampos.toUpperCase ()).
-                                        join (',')
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (chavePrimariaInterna) {
-
-                let chavesPrimariasLocais = {};
-
-                Object.
-                    keys (chavePrimariaInterna).
-                    forEach (chave =>
-                        chavesPrimariasLocais = {
-                            ...chavesPrimariasLocais,
-                            [ chave.toUpperCase () ]: {
-                                $: String (chavePrimariaInterna [ chave ])
-                            }
-                        }
-                    );
-
-                estruturaEnvio.requestBody.dataSet.dataRow.key = chavesPrimariasLocais;
-            }
-
-            return estruturaEnvio;
-        }
-
-        const url = `${ window.location.origin }/mge/service.sbr?serviceName=CRUDServiceProvider.saveRecord&outputType=json`;
-        const dadosEnvio = montarDadosEnvio (dados, instancia, chavePrimaria);
-
-        return JX.post (url, dadosEnvio);
-
-    }
-
-    /**
-     * Salva o registro atual na base de dados
-     * 
-     * @param { any }           dados 
-     * @param { string }    instancia 
-     * @param { any } chavesPrimarias 
+     * @param { any }                   dados Dados do registro a ser salvo
+     * @param { string }            instancia Nome da Instancia a receber o registro a ser salvo
+     * @param { Array <any> } chavesPrimarias Chaves de identificacao do registro (vazio para criar um novo registro)
      * 
      * @returns 
      */
     static async salvar (dados, instancia, chavesPrimarias) {
+
+        function _salvar (dadosCentrais, instanciaCentral, chavePrimariaCentral) {
+
+            function montarDadosEnvio (dadosInterno, instanciaInterna, chavePrimariaInterna) {
+
+                let camposConvertidos = Object.
+                                            keys (dadosInterno).
+                                            reduce ((acumulador, chave) => ({
+                                                ...acumulador,
+                                                [ chave.toUpperCase () ]: {
+                                                    $: String (dadosInterno [ chave ])
+                                                }
+                                            }), {});
+
+                var estruturaEnvio = {
+                    serviceName: 'CRUDServiceProvider.saveRecord',
+                    requestBody: {
+                        dataSet: {
+                            rootEntity: instanciaInterna,
+                            includePresentationFields: 'N',
+                            dataRow: {
+                                localFields: camposConvertidos
+                            },
+                            entity: {
+                                fieldset: {
+                                    list: Object.
+                                            keys (dadosInterno).
+                                            map  (nomeCampos =>
+                                                    nomeCampos.toUpperCase ()).
+                                            join (',')
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (chavePrimariaInterna) {
+
+                    let chavesPrimariasLocais = {};
+
+                    Object.
+                        keys (chavePrimariaInterna).
+                        forEach (chave =>
+                            chavesPrimariasLocais = {
+                                ...chavesPrimariasLocais,
+                                [ chave.toUpperCase () ]: {
+                                    $: String (chavePrimariaInterna [ chave ])
+                                }
+                            }
+                        );
+
+                    estruturaEnvio.requestBody.dataSet.dataRow.key = chavesPrimariasLocais;
+                }
+
+                return estruturaEnvio;
+            }
+
+            const url = `${ window.location.origin }/mge/service.sbr?serviceName=CRUDServiceProvider.saveRecord&outputType=json`;
+            const dadosEnvio = montarDadosEnvio (dadosCentrais, instanciaCentral, chavePrimariaCentral);
+
+            return JX.post (url, dadosEnvio);
+
+        }
 
         let respostas = [];
 
         if (chavesPrimarias && chavesPrimarias instanceof Array && chavesPrimarias.length) {
 
             for (let chavePrimaria of chavesPrimarias) {
-                respostas.push (await JX._salvar (dados, instancia, chavePrimaria));
+                respostas.push (await _salvar (dados, instancia, chavePrimaria));
             }
 
         } else {
-            return JX._salvar (dados, instancia, chavesPrimarias);
+            return _salvar (dados, instancia, chavesPrimarias);
         }
 
         return respostas;
     }
 
+    /**
+     * Deleta o registro atual na base de dados
+     * 
+     * @param { String }            instancia Nome da Instancia a receber o registro a ser salvo
+     * @param { Array <any> } chavesPrimarias Chaves de identificacao do registro a ser deletado
+     * 
+     * @returns                               Resposta da requisicao de deletao
+     */
+    static async deletar (instancia, chavesPrimarias) {
 
+        function _deletar (instanciaInterna, chavesPrimariasInterna) {
 
-    static deletar (instancia, chavesPrimarias) {
-
-        const url = `${ window.location.origin }/mge/service.sbr?serviceName=DatasetSP.removeRecord&outputType=json`;
-        const dadosEnvio = {
-            serviceName: 'DatasetSP.removeRecord',
-            requestBody: {
-                entityName: instancia,
-                pks: chavesPrimarias instanceof Array ? chavesPrimarias : [ chavesPrimarias ]
+            const url = `${ window.location.origin }/mge/service.sbr?serviceName=DatasetSP.removeRecord&outputType=json`;
+            const dadosEnvio = {
+                serviceName: 'DatasetSP.removeRecord',
+                requestBody: {
+                    entityName: instanciaInterna,
+                    pks: [ chavesPrimariasInterna ]
+                }
             }
+
+            return JX.post (url, dadosEnvio);
         }
 
-        return JX.post (url, dadosEnvio);
+        let respostas = [];
+
+        if (chavesPrimarias && chavesPrimarias instanceof Array && chavesPrimarias.length) {
+
+            for (let chavePrimaria of chavesPrimarias) {
+                respostas.push (await _deletar (instancia, chavePrimaria));
+            }
+
+        } else {
+            return _deletar (instancia, chavesPrimarias);
+        }
+
+        return respostas;
     }
 
 
@@ -328,33 +345,45 @@ class JX {
     /***********************************************/
 
     /**
-     * Removes the Dashboard frame
-     * @param { * } options 
+     * Remove o frame de filtro para a tela em HTML5 no Componente de BI
+     * 
+     * @param { String | { instance: String, initialPage: String, params: any | undefined, UID: number, nuGdt: number } } options Informacoes para a remocao do frame
      */
     static removerFrame (options = { instance: '', initialPage: 'app.jsp', params: undefined, UID: 0, nuGdt: 0 }) {
+
+        function validar (condicao, execucao) { if (condicao) execucao (); }
 
         new Promise (resolve => {
 
             if (window.parent.document.getElementsByTagName ('body').length) {
 
-                if (window.parent.document.querySelector ('div.gwt-PopupPanel.alert-box.box-shadow'))
-                    window.parent.document.querySelector ('div.gwt-PopupPanel.alert-box.box-shadow').style.display = 'none';
+                validar (window.parent.document.querySelector ('div.gwt-PopupPanel.alert-box.box-shadow'), () =>
+                    window.parent.document
+                        .querySelector ('div.gwt-PopupPanel.alert-box.box-shadow').style.display = 'none'
+                );
 
                 window.parent.document.getElementsByTagName ('body') [0].style.overflow = 'hidden';
             }
 
             if (window.parent.parent.document.getElementsByTagName ('body').length) {
 
-                if (window.parent.parent.document.querySelector ('div.gwt-PopupPanel.alert-box.box-shadow'))
-                    window.parent.parent.document.querySelector ('div.gwt-PopupPanel.alert-box.box-shadow').style.display = 'none';
+                validar (window.parent.parent.document.querySelector ('div.gwt-PopupPanel.alert-box.box-shadow'), () =>
+                    window.parent.parent.document
+                        .querySelector ('div.gwt-PopupPanel.alert-box.box-shadow').style.display = 'none'
+                );
 
                 window.parent.parent.document.getElementsByTagName ('body') [0].style.overflow = 'hidden';
             }
 
             let instance = "";
 
-            if (window.parent.document.querySelector ('div.GI-BUHVBPVC > div > div > div > div > div > table > tbody > tr > td > div')) {
-                instance = window.parent.document.querySelector ('div.GI-BUHVBPVC > div > div > div > div > div > table > tbody > tr > td > div').title;
+            if (
+                window.parent.document
+                    .querySelector ('div.GI-BUHVBPVC > div > div > div > div > div > table > tbody > tr > td > div')
+            ) {
+                instance = window.parent.document
+                    .querySelector ('div.GI-BUHVBPVC > div > div > div > div > div > table > tbody > tr > td > div')
+                    .title;
             }
             else {
                 instance = typeof options === 'string' ? options : options.instance;
@@ -363,10 +392,20 @@ class JX {
             if (instance.length > 0)  {
                 JX.
                     consultar (`SELECT NUGDG FROM TSIGDG WHERE TITULO = '${ instance }'`).
-                    then (e => resolve ({ ...(typeof options === 'string' ? {} : options), gadGetID: 'html5_z6dld', params: undefined, nuGdt: e [0].NUGDG }));
+                    then (e => resolve ({
+                        ...(typeof options === 'string' ? {} : options),
+                        gadGetID: 'html5_z6dld',
+                        params: undefined,
+                        nuGdt: e [0].NUGDG
+                    }));
             }
             else {
-                resolve ({ ...(typeof options === 'string' ? {} : options), gadGetID: 'html5_z6dld', params: undefined, nuGdt: options.nuGdt });
+                resolve ({
+                    ...(typeof options === 'string' ? {} : options),
+                    gadGetID: 'html5_z6dld',
+                    params: undefined,
+                    nuGdt: options.nuGdt
+                });
             }
         }).
         then (opt =>
@@ -381,34 +420,49 @@ class JX {
                             join        ('');
 
                     const entryPoint = options.initialPage ? options.initialPage : 'app.jsp';
-                    const source = `/mge/html5component.mge?entryPoint=${ entryPoint }&nuGdg=${ opt.nuGdt }${ urlOptions }${ opt.params ? '&params=' + window.atob (opt.params) : '' }`
+                    const source = `/mge/html5component.mge?entryPoint=${
+                        entryPoint
+                    }&nuGdg=${ opt.nuGdt }${ urlOptions }${ opt.params ? '&params=' + window.atob (opt.params) : '' }`;
 
                     setTimeout (() =>
                         window.parent.document.getElementsByClassName ('dyna-gadget') [0].innerHTML =
                             `<iframe src="${ source }" class="gwt-Frame" style="width: 100%; height: 100%;"></iframe>`
                         , 500);
-                        setTimeout (() => document.getElementsByClassName ('popupContent').length ? document.getElementsByClassName ('popupContent') [0].parentElement.remove () : (() => { /**/ }) (), 30000);
-                        setTimeout (() => (document.getElementById ('stndz-style').parentElement.parentElement).getElementsByTagName ('body') [0].style.overflow = 'hidden', 30000);
+                        setTimeout (() =>
+                            document.getElementsByClassName ('popupContent').length
+                                ? document.getElementsByClassName ('popupContent') [0].parentElement.remove ()
+                                : (() => { /**/ }) ()
+                        , 30000);
+                        setTimeout (() => (
+                            document.getElementById ('stndz-style').parentElement.parentElement)
+                                .getElementsByTagName ('body') [0].style.overflow = 'hidden'
+                        , 30000);
                 }
             })    
         );
     }
 
 
+
     /**
-     * Opens the current frame in new tab
-     * @version 6.0 Main implementation
-     * @version 7.0 Optimization anf bug fix
+     * Abre a pagina atual em uma nova aba (guia)
+     * 
+     * @param { Boolean } forcado Obriga a abertura da pagina via evento manual
      */
     static novaGuia (forcado = false) {
-
         if ((window.parent.parent.document.querySelector ('.Taskbar-container') && !forcado) || forcado) {
             Object.assign (document.createElement ('a'), { target: '_blank', href: window.location.href }).click ();
         }
-
     }
 
 
+
+    /**
+     * Abre uma pagina
+     * 
+     * @param { String }      resourceID Id da pagina a ser aberta
+     * @param { String } chavesPrimarias Valores de chaves primarias a serem passadas para a tela
+     */
     static abrirPagina ({ resourceID, chavesPrimarias }) {
 
         const requisicao =
@@ -447,7 +501,6 @@ class JX {
 
     /**
      * Closes the current tab
-     * @version 7.0 Main implementation
      */
     static fecharPagina () {
         if (window.parent.parent.document.querySelector ('.Taskbar-container')) {
@@ -468,11 +521,15 @@ class JX {
 
     /**
      * Retorna a URL atual da pagina
-     * @param { string } path Caminho a ser adicionado a URL atual
-     * @returns { string } A URL com o protocolo HTTPS ou HTTP
+     * 
+     * @param { String }        path Caminho a ser adicionado a URL atual
+     * 
+     * @returns { Promise <String> } A URL com o protocolo HTTPS ou HTTP
      */
-     static getUrl (path) {
-        return `${ window.location.origin }${ path ? '/' + path.replace (/^[\/]+/, '') : '' }`;
+    static async getUrl (path) {
+        return await Promise.resolve (
+            `${ window.location.origin }${ path ? '/' + path.replace (/^[\/]+/, '') : '' }`
+        );
     }
 
 
@@ -484,10 +541,11 @@ class JX {
      * - Caso seja informado o nome, porem nao exista, retorna string vazia.
      * - Caso seja informado o nome e exista, retorna o valor do cookie.
      * 
-     * @param { string } cookieName Nome do cookie desejado
-     * @returns { string } Conteudo do cookie desejado
+     * @param { String }  cookieName Nome do cookie desejado
+     * 
+     * @returns { Promise <String> } Conteudo do cookie desejado
      */
-    static getCookie (cookieName) {
+    static async getCookie (cookieName) {
 
         const decodedCookie = decodeURIComponent (document.cookie);
 
@@ -504,18 +562,20 @@ class JX {
 
             }
 
-            return '';
+            return Promise.resolve ('');
         }
 
-        return decodedCookie;
+        return Promise.resolve (decodedCookie);
     }
 
 
     /**
-     * Busca o conteudo de um arquivo
-     * @param { string } caminhoArquivo Caminho do arquivo a ser carregado
-     * @returns { string } Conteudo do arquivo
-     */
+    * Busca o conteudo de um arquivo
+    * 
+    * @param { String } caminhoArquivo Caminho do arquivo a ser carregado
+    * 
+    * @returns { String }              Conteudo do arquivo
+    */
     static getArquivo (caminhoArquivo) {
         return JX.get (caminhoArquivo, {
             headers: { 'Content-Type': 'text/plain' }

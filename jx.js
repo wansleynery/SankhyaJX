@@ -522,12 +522,12 @@ class JX {
     /**
      * Retorna a URL atual da pagina
      * 
-     * @param { String }        path Caminho a ser adicionado a URL atual
+     * @param { String }        path Caminho opcional a ser adicionado a URL atual
      * 
      * @returns { Promise <String> } A URL com o protocolo HTTPS ou HTTP
      */
-    static async getUrl (path) {
-        return await Promise.resolve (
+    static async getUrl (path = undefined) {
+        return Promise.resolve (
             `${ window.location.origin }${ path ? '/' + path.replace (/^[\/]+/, '') : '' }`
         );
     }

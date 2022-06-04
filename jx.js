@@ -396,7 +396,7 @@ class JX {
                         ...(typeof options === 'string' ? {} : options),
                         gadGetID: 'html5_z6dld',
                         params: undefined,
-                        nuGdt: e [0].NUGDG
+                        nuGdt: e && e.length ? e [0].NUGDG : ''
                     }));
             }
             else {

@@ -358,10 +358,19 @@ class JX {
     /***********************************************/
 
     /**
-     * Removes the Dashboard frame
-     * @param { * } options 
+     * Remove o frame da página de BI
+     * 
+     * @param { { instancia: String, paginaInicial: String, opcoes: any } } configuracoes Configuracoes gerais da pagina
+     * 
+     * **instancia**: Nome exato do componente de BI
+     * 
+     * **paginaInicial**: URL (a partir da pasta raiz) e nome do arquivo da pagina inicial
+     * 
+     * **opcoes**: [opcional] Campos com valores a serem recebidos pela pagina
+     * 
+     * _Padrao_: `{ instancia: '', paginaInicial: 'app.jsp' }`
      */
-    static removerFrame ({ instancia, paginaInicial, parametros } = { instancia: '', paginaInicial: 'app.jsp' }) {
+    static removerFrame ({ instancia, paginaInicial, ...opcoes } = { instancia: '', paginaInicial: 'app.jsp' }) {
 
         new Promise (resolve => {
 
@@ -395,28 +404,24 @@ class JX {
             if (instancia && instancia.length > 0)  {
                 JX.
                     consultar (`SELECT NUGDG FROM TSIGDG WHERE TITULO = '${ instancia }'`).
-                    then (e => resolve ({ gadGetID: 'html5_z6dld', parametros, nuGdt: e [0].NUGDG }));
+                    then (e => resolve ({ gadGetID: 'html5_z6dld', nuGdt: e [0].NUGDG, ...opcoes }));
             }
             else {
-                resolve ({ gadGetID: 'html5_z6dld', parametros, nuGdt: 0 });
+                resolve ({ gadGetID: 'html5_z6dld', nuGdt: 0, ...opcoes });
             }
         }).
-        then (opt =>
+        then (o =>
             setTimeout (() => {
                 if (typeof window.parent.document.getElementsByClassName ('DashWindow') [0] != 'undefined') {
 
                     const opcoesUrl =
                         Object.
-                            keys        (opt).
+                            keys        (o).
                             filter      (item => !['params', 'UID', 'instance', 'nuGdg', 'gadGetID'].includes (item)).
-                            map         (item => `&${ item }=${ opt [item] }`).
+                            map         (item => `&${ item }=${ o [item] }`).
                             join        ('');
 
-                    const url = `/mge/html5component.mge?entryPoint=${
-                        paginaInicial
-                    }&nuGdg=${ opt.nuGdt }${ opcoesUrl }${
-                        opt.parametros ? '&params=' + window.atob (opt.parametros) : ''
-                    }`
+                    const url = `/mge/html5component.mge?entryPoint=${ paginaInicial }&nuGdg=${ o.nuGdt }${ opcoesUrl }`
 
                     setTimeout (() =>
                         window.parent.document.getElementsByClassName ('dyna-gadget') [0].innerHTML =

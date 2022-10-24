@@ -23,7 +23,7 @@ class JX {
             isJSON = tipoCorpoRequisicao.length < 1 || tipoCorpoRequisicao.includes ('json');
 
             headers ['Content-Type'] && delete headers ['Content-Type'];
-            headers ['Content-Type'] = !isJSON ? tipoCorpoRequisicao : 'application/json';
+            headers ['Content-Type'] = !isJSON ? tipoCorpoRequisicao : 'application/json; charset=UTF-8';
         }
 
         try {
@@ -58,7 +58,7 @@ class JX {
             isJSON = tipoCorpoRequisicao.length < 1 || tipoCorpoRequisicao.includes ('json');
 
             headers ['Content-Type'] && delete headers ['Content-Type'];
-            headers ['Content-Type'] = !isJSON ? tipoCorpoRequisicao : 'application/json';
+            headers ['Content-Type'] = !isJSON ? tipoCorpoRequisicao : 'application/json; charset=UTF-8';
         }
 
         try {

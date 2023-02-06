@@ -257,7 +257,7 @@ class JX {
                                             }
                                         }), {});
 
-            var estruturaEnvio = {
+            let estruturaEnvio = {
                 serviceName: 'CRUDServiceProvider.saveRecord',
                 requestBody: {
                     dataSet: {
@@ -361,86 +361,29 @@ class JX {
 
     /**
      * Remove o frame da página de BI
-     * 
-     * @param { { instancia: String, paginaInicial: String, opcoes: any } } configuracoes Configuracoes gerais da pagina
-     * 
-     * **instancia**: Nome exato do componente de BI
-     * 
-     * **paginaInicial**: URL (a partir da pasta raiz) e nome do arquivo da pagina inicial
-     * 
-     * **opcoes**: [opcional] Campos com valores a serem recebidos pela pagina
-     * 
-     * _Padrao_: `{ instancia: '', paginaInicial: 'app.jsp' }`
      */
-    static removerFrame ({ instancia, paginaInicial, ...opcoes } = { instancia: '', paginaInicial: 'app.jsp' }) {
+    static removerFrame () {
 
-        new Promise (resolve => {
+        /* Layout novo */
+            if (window.document.querySelector ('body div.GI-BUHVBCWC'))
+                window.document.querySelector ('body div.GI-BUHVBCWC').style.display = 'none';
 
-            if (window.parent.document.getElementsByTagName ('body').length) {
+            if (window.document.querySelector ('body div.GI-BUHVBPVC'))
+                window.document.querySelector ('body div.GI-BUHVBPVC').style.paddingLeft = 0;
 
-                if (window.parent.document.querySelector ('div.gwt-PopupPanel.alert-box.box-shadow'))
-                    window.parent.document.querySelector ('div.gwt-PopupPanel.alert-box.box-shadow')
-                        .style.display = 'none';
+            if (window.document.querySelector ('body div.GI-BUHVBPVC > div > div > div'))
+                window.document.querySelector ('body div.GI-BUHVBPVC > div > div > div').style.height = '100%';
 
-                window.parent.document.getElementsByTagName ('body') [0].style.overflow = 'hidden';
-            }
+            if (window.document.querySelector ('body div.GI-BUHVBPVC > div > div > div'))
+                window.document.querySelector ('body div.GI-BUHVBPVC > div > div > div').style.width = '100%';
 
-            if (window.parent.parent.document.getElementsByTagName ('body').length) {
+            if (window.document.querySelector ('body div.GI-BUHVBPVC > div > div > div > div > div:nth-child(2)'))
+                window.document.querySelector ('body div.GI-BUHVBPVC > div > div > div > div > div:nth-child(2)').style.display = 'none';
 
-                if (window.parent.parent.document.querySelector ('div.gwt-PopupPanel.alert-box.box-shadow'))
-                    window.parent.parent.document.querySelector ('div.gwt-PopupPanel.alert-box.box-shadow')
-                        .style.display = 'none';
+            if (window.document.querySelector ('body div.GI-BUHVBPVC > div > div > div > div > div:nth-child(3)'))
+                window.document.querySelector ('body div.GI-BUHVBPVC > div > div > div > div > div:nth-child(3)').style.inset = '0';
+        /* */
 
-                window.parent.parent.document.getElementsByTagName ('body') [0].style.overflow = 'hidden';
-            }
-
-            if (
-                window.parent.document
-                    .querySelector ('div.GI-BUHVBPVC > div > div > div > div > div > table > tbody > tr > td > div')
-            ) {
-                instancia = window.parent.document
-                    .querySelector ('div.GI-BUHVBPVC > div > div > div > div > div > table > tbody > tr > td > div')
-                    .title;
-            }
-
-            if (instancia && instancia.length > 0)  {
-                JX.
-                    consultar (`SELECT NUGDG FROM TSIGDG WHERE TITULO = '${ instancia }'`).
-                    then (e => resolve ({ gadGetID: 'html5_z6dld', nuGdt: e [0].NUGDG, ...opcoes }));
-            }
-            else {
-                resolve ({ gadGetID: 'html5_z6dld', nuGdt: 0, ...opcoes });
-            }
-        }).
-        then (o =>
-            setTimeout (() => {
-                if (typeof window.parent.document.getElementsByClassName ('DashWindow') [0] != 'undefined') {
-
-                    const opcoesUrl =
-                        Object.
-                            keys        (o).
-                            filter      (item => !['params', 'UID', 'instance', 'nuGdg', 'gadGetID'].includes (item)).
-                            map         (item => `&${ item }=${ o [item] }`).
-                            join        ('');
-
-                    const url = `/mge/html5component.mge?entryPoint=${ paginaInicial }&nuGdg=${ o.nuGdt }${ opcoesUrl }`
-
-                    setTimeout (() =>
-                        window.parent.document.getElementsByClassName ('dyna-gadget') [0].innerHTML =
-                            `<iframe src="${ url }" class="gwt-Frame" style="width: 100%; height: 100%;"></iframe>`
-                    , 500);
-
-                    setTimeout (() => document.getElementsByClassName ('popupContent').length
-                        ? document.getElementsByClassName ('popupContent') [0].parentElement.remove ()
-                        : (() => { /**/ }) ()
-                    , 20000);
-
-                    setTimeout (() => (document.getElementById ('stndz-style').parentElement.parentElement)
-                        .getElementsByTagName ('body') [0].style.overflow = 'hidden'
-                    , 20000);
-                }
-            })    
-        );
     }
 
 
@@ -521,7 +464,7 @@ class JX {
      * @returns { string } A URL com o protocolo HTTPS ou HTTP
      */
     static getUrl (path) {
-        return `${ window.location.origin }${ path ? '/' + path.replace (/^[\/]+/, '') : '' }`;
+        return `${ window.location.origin }${ path ? '/' + path.replace ('/', '') : '' }`;
     }
 
 

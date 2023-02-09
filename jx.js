@@ -400,7 +400,7 @@ class JX {
             ) {
                 instancia = window.parent.document
                     .querySelector ('div.GI-BUHVBPVC > div > div > div > div > div > table > tbody > tr > td > div')
-                    .title;
+                    .textContent;
             }
 
             if (instancia && instancia.length > 0)  {

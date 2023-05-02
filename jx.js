@@ -458,38 +458,27 @@ class JX {
     }
 
 
-    static abrirPagina ({ resourceID, chavesPrimarias }) {
+    static abrirPagina (resourceID, chavesPrimarias) {
 
-        const requisicao =
-            `<serviceRequest serviceName="WorkspaceSP.openItemMenu">
-                <requestBody>
-                    <itemMenu resourceID="${ resourceID }"${
-                        chavesPrimarias
-                            ? ' pk="' + Buffer.from (JSON.stringify (chavesPrimarias), 'utf8').toString ('base64') + '"'
-                            : ''
-                    } />
-                </requestBody>
-            </serviceRequest>`
+        let body = {};
+    
+        if (chavesPrimarias) {
+            Object.keys (chavesPrimarias).forEach (function (chave) {
+                body [chave] = isNaN (chavesPrimarias [chave])
+                    ? chavesPrimarias [chave]
+                    : '_' + String (chavesPrimarias [chave])
+            });
+        }
 
-        JX.post (`${ JX.getUrl () }/mge/service.sbr?serviceName=WorkspaceSP.openItemMenu`, requisicao, {
-                headers: { 'Content-Type': 'application/xml' }
-            }
-        ).then (resposta => {
+        let url = JX.getUrl (`mge/system.jsp#app/%resID/%body&pk-refresh=%time`);
+        url = url.replace ('%resID', btoa (resourceID));
+        url = url.replace ('%body',  btoa (JSON.stringify (body)));
+        url = url.replace ('%time',  String (Date.now ()));
 
-            /* Eliminar a primeira linha da resposta com o cabecalho do XML */
-            const dadosSemCabecalho = resposta.match (/(.*)\n(.*)/) [2];
-
-            /* Pegar apenas o conteudo JSON da resposta do servidor */
-            const dadosBrutos = dadosSemCabecalho.match (/(.*)<json><!\[CDATA\[(.*)\]\]><\/json>(.*)/);
-
-            /* Converter o conteudo JSON para objeto */
-            const jsonResposta = JSON.parse (dadosBrutos [2]);
-
-            Object.assign (document.createElement ('a'), {
-                target: '_blank',
-                href: JX.getUrl (jsonResposta.onclick),
-            }).click ();
-        });
+        Object.assign (document.createElement ('a'), {
+            target: '_top',
+            href: url
+        }).click ();
 
     }
 

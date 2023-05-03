@@ -470,7 +470,7 @@ class JX {
             });
         }
 
-        let url = JX.getUrl (`mge/system.jsp#app/%resID/%body&pk-refresh=%time`);
+        let url = JX.getUrl (`/mge/system.jsp#app/%resID/%body&pk-refresh=%time`);
         url = url.replace ('%resID', btoa (resourceID));
         url = url.replace ('%body',  btoa (JSON.stringify (body)));
         url = url.replace ('%time',  String (Date.now ()));

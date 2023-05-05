@@ -465,8 +465,8 @@ class JX {
         if (chavesPrimarias) {
             Object.keys (chavesPrimarias).forEach (function (chave) {
                 body [chave] = isNaN (chavesPrimarias [chave])
-                    ? chavesPrimarias [chave]
-                    : '_' + String (chavesPrimarias [chave])
+                    ? String (chavesPrimarias [chave])
+                    : Number (chavesPrimarias [chave])
             });
         }
 

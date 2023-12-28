@@ -7,11 +7,11 @@ class JX {
     /**
      * Realiza requisicoes do tipo POST
      * 
-     * @param { string }              url URL da requisicao
-     * @param { any }               corpo Corpo da requisicao
-     * @param { { headers: any } } opcoes Opcoes adicionais da requisicao
+     * @param { String } url                 URL da requisicao
+     * @param { Object } corpo               Corpo da requisicao
+     * @param { { headers: Object } } opcoes Opcoes adicionais da requisicao
      * 
-     * @returns                           Resposta da requisicao
+     * @returns { Promise <Object> }         Resposta da requisicao
      */
     static async post (url, corpo, { headers } = { headers: {} }) {
         
@@ -32,7 +32,7 @@ class JX {
                 headers,
                 method  : 'POST',
                 redirect: 'follow',
-                body    : isJSON ? JSON.stringify (corpo) : corpo
+                body    : isJSON ? JSON.Stringify (corpo) : corpo
             });
 
             return isJSON ? resposta.json () : resposta.text ();
@@ -43,10 +43,10 @@ class JX {
     /**
      * Realiza requisicoes do tipo GET
      * 
-     * @param { string }              url URL da requisicao
-     * @param { { headers: any } } opcoes Opcoes adicionais da requisicao
+     * @param { String } url                 URL da requisicao
+     * @param { { headers: Object } } opcoes Opcoes adicionais da requisicao
      * 
-     * @returns                           Resposta da requisicao
+     * @returns { Promise <Object> }         Resposta da requisicao
      */
     static async get (url, { headers } = { headers: {} }) {
         
@@ -80,9 +80,11 @@ class JX {
     /**
      * Realiza consultas ao servico de banco de dados
      * 
-     * @param { string }    query Consulta a ser realizada
+     * @param { String } query               Consulta a ser realizada
      * 
-     * @returns { Promise <any> } Resposta da consulta
+     * @returns { Promise <Array <Object>> } Resposta da consulta
+     * 
+     * @example JX.consultar ('SELECT * FROM DUAL');
      */
     static async consultar (query) {
     
@@ -131,7 +133,7 @@ class JX {
     /**
      * Realiza o acionamento remoto de um botao de acao
      * 
-     * @param { any }                                               dados Dados para o processamento do botao
+     * @param { any } dados                                               Dados para o processamento do botao
      * @param { { tipo: ['js', 'java', 'sql'], idBotao: number } } opcoes Opcoes de configuracao do acionamento remoto.
      * 
      * **tipo**: Se o botao eh em Javascript (JS), Java (JAVA) ou PL-SQL (SQL). Case-insensitive.
@@ -144,7 +146,7 @@ class JX {
      * 
      * _Padrao_: `{ tipo: 'java', idBotao: 0 }`
      * 
-     * @returns                                                           Resposta da chamada remota
+     * @returns { Promise <Object> }                                      Resposta da chamada do botao
      */
     static acionarBotao (dados, { tipo, idBotao, entidade, nomeProcedure } = { tipo: 'java', idBotao: 0 }) {
 
@@ -233,16 +235,14 @@ class JX {
 
 
     /**
-     * Salva o registro atual na base de dados (metodo interno)
+     * (METODO INTERNO) Salva o registro atual na base de dados 
      * 
-     * @deprecated
-     * 
-     * @param { any }         dados Dados do registro a ser salvo
-     * @param { string }  instancia Nome da Instancia a receber o registro a ser salvo
-     * @param { any } chavePrimaria Chaves de identificacao do registro caso necessario forcar a atualizacao ou
+     * @param { any } dados          Dados do registro a ser salvo
+     * @param { String } instancia   Nome da Instancia a receber o registro a ser salvo
+     * @param { any } chavePrimaria  Chaves de identificacao do registro caso necessario forcar a atualizacao ou
      * qual pk o registro devera ter ao ser criado
      * 
-     * @returns                     Resposta da requisicao de salvamento
+     * @returns { Promise <Object> } Resposta da requisicao de salvamento interno
      */
     static _salvar (dados, instancia, chavePrimaria) {
 
@@ -312,11 +312,13 @@ class JX {
     /**
      * Salva o registro atual na base de dados
      * 
-     * @param { any }           dados 
-     * @param { string }    instancia 
-     * @param { any } chavesPrimarias 
+     * @param { Object } dados           Dados do registro a ser salvo
+     * @param { String } instancia       Nome da Instancia a receber o registro a ser salvo
+     * @param { Object } chavesPrimarias Chaves de identificacao do registro
      * 
-     * @returns 
+     * @returns { Promise <Object> }     Resposta da requisicao de salvamento
+     * 
+     * @example JX.salvar ({ DESCRICAO: 'DESCRICAO ALTERADA' }, 'MarcaProduto', { CODIGO: 999 });
      */
     static async salvar (dados, instancia, chavesPrimarias) {
 
@@ -337,6 +339,16 @@ class JX {
 
 
 
+    /**
+     * Deleta o registro atual na base de dados
+     * 
+     * @param { String } instancia       Nome da Instancia a receber o registro a ser salvo
+     * @param { Object } chavesPrimarias Chaves de identificacao do registro
+     * 
+     * @returns { Promise <Object> }     Resposta da requisicao de salvamento
+     * 
+     * @example JX.deletar ('MarcaProduto', { CODIGO: 999 });
+     */
     static deletar (instancia, chavesPrimarias) {
 
         const url = `${ window.location.origin }/mge/service.sbr?serviceName=DatasetSP.removeRecord&outputType=json`;
@@ -371,6 +383,8 @@ class JX {
      * **opcoes**: [opcional] Campos com valores a serem recebidos pela pagina
      * 
      * _Padrao_: `{ instancia: '', paginaInicial: 'app.jsp' }`
+     * 
+     * @example JX.removerFrame ({ instancia: 'TELA_HTML5', paginaInicial: 'paginas/entidade/index.jsp'}); // BI-SankhyaJS
      */
     static removerFrame ({ instancia, paginaInicial, ...opcoes } = { instancia: '', paginaInicial: 'app.jsp' }) {
 
@@ -444,10 +458,13 @@ class JX {
     }
 
 
+
     /**
-     * Opens the current frame in new tab
-     * @version 6.0 Main implementation
-     * @version 7.0 Optimization anf bug fix
+     * Abre uma nova guia com a pagina atual
+     * 
+     * @param { boolean } forcado [opcional] Forca a abertura da nova guia
+     * 
+     * @example JX.novaGuia ();
      */
     static novaGuia (forcado = false) {
 
@@ -458,22 +475,38 @@ class JX {
     }
 
 
+
+    /**
+     * Abre uma pagina dentro do Sankhya-W.
+     * 
+     * - Se o resourceID nao existir, o sistema informara que a tela nao existe.
+     * - Se as chaves primarias nao forem informadas, a tela sera aberta na pagina inicial.
+     * - Se existirem chaves primarias, mas nao forem encontradas, a tela ssera aberta como visualizacao de um registro vazio (para inclusao)
+     * - Se existirem chaves primarias e forem encontradas, a tela sera aberta no registro encontrado.
+     * 
+     * @param { String } resourceID      ID do recurso a ser aberto
+     * @param { Object } chavesPrimarias Chaves de identificacao do registro
+     * 
+     * @example JX.abrirPagina ('br.com.sankhya.core.cad.marcas', { CODIGO: 999 });
+     */
     static abrirPagina (resourceID, chavesPrimarias) {
 
-        let body = {};
+        let url = JX.getUrl (`/mge/system.jsp#app/%resID`);
+        url = url.replace ('%resID', btoa (resourceID));
     
         if (chavesPrimarias) {
+
+            let body = {};
+
             Object.keys (chavesPrimarias).forEach (function (chave) {
                 body [chave] = isNaN (chavesPrimarias [chave])
                     ? String (chavesPrimarias [chave])
                     : Number (chavesPrimarias [chave])
             });
-        }
 
-        let url = JX.getUrl (`/mge/system.jsp#app/%resID/%body&pk-refresh=%time`);
-        url = url.replace ('%resID', btoa (resourceID));
-        url = url.replace ('%body',  btoa (JSON.stringify (body)));
-        url = url.replace ('%time',  String (Date.now ()));
+            url = url.concat (`/${ btoa (JSON.Stringify (body)) }`);
+
+        }
 
         Object.assign (document.createElement ('a'), {
             target: '_top',
@@ -484,8 +517,9 @@ class JX {
 
 
     /**
-     * Closes the current tab
-     * @version 7.0 Main implementation
+     * Fecha a pagina atual.
+     * 
+     * Ele verifica se a pagina atual esta dentro do Sankhya-W para fechar, senao ele fecha a aba do navegador.
      */
     static fecharPagina () {
         if (window.parent.parent.document.querySelector ('.Taskbar-container')) {
@@ -506,8 +540,10 @@ class JX {
 
     /**
      * Retorna a URL atual da pagina
-     * @param { string } path Caminho a ser adicionado a URL atual
-     * @returns { string } A URL com o protocolo HTTPS ou HTTP
+     * 
+     * @param { String } path Caminho a ser adicionado a URL atual
+     * 
+     * @returns { String }    A URL com o protocolo HTTPS ou HTTP
      */
     static getUrl (path) {
         return `${ window.location.origin }${ path ? '/' + path.replace ('/', '') : '' }`;
@@ -519,17 +555,18 @@ class JX {
      * 
      * Sao tres retornos possiveis:
      * - Caso nao seja informado o nome, retorna todos os cookies.
-     * - Caso seja informado o nome, porem nao exista, retorna string vazia.
+     * - Caso seja informado o nome, porem nao exista, retorna String vazia.
      * - Caso seja informado o nome e exista, retorna o valor do cookie.
      * 
-     * @param { string } cookieName Nome do cookie desejado
-     * @returns { string } Conteudo do cookie desejado
+     * @param { String } cookieName Nome do cookie desejado
+     * 
+     * @returns { String }          Conteudo do cookie desejado
      */
     static getCookie (cookieName) {
 
         const decodedCookie = decodeURIComponent (document.cookie);
 
-        if (cookieName && cookieName.length) {
+        if (cookieName && typeof cookieName === 'string' && cookieName.length) {
             const cookies = decodedCookie.split (';');
 
             for (let cookie of cookies) {
@@ -551,12 +588,239 @@ class JX {
 
     /**
      * Busca o conteudo de um arquivo
-     * @param { string } caminhoArquivo Caminho do arquivo a ser carregado
-     * @returns { string } Conteudo do arquivo
+     * 
+     * @param { String } caminhoArquivo Caminho do arquivo a ser carregado
+     * 
+     * @returns { String }              Conteudo do arquivo
      */
     static getArquivo (caminhoArquivo) {
         return JX.get (caminhoArquivo, {
             headers: { 'Content-Type': 'text/plain' }
         });
     }
+
+
+
+    /**
+     * (METODO INTERNO) Retorna um array com o nome/chave e o valor dos parametros informados
+     * 
+     * @param { Object } objeto                            Objeto a ser convertido nas tuplas dos parametros
+     * 
+     * @returns { Array <Array <String, Object, String>> } Tuplas dos parametros
+     */
+    static _converterTuplas (respostaParametros) {
+
+        let tuplas = [];
+
+        function recuperarValorNodo (nodo) {
+
+            let valor = null;
+        
+            switch (nodo.type) {
+                case 'L': {
+                    valor = nodo.value === 'true';
+                    break;
+                }
+                case 'I':
+                case 'F': {
+                    valor = Number (nodo.value);
+                    break;
+                }
+                case 'T': {
+                    valor = nodo.value;
+                    break;
+                }
+                case 'C': {
+                    const opcoes = (nodo.listContent || '').split ('\n');
+                    const indice = parseInt (nodo.value, 10);
+                    valor = opcoes [indice] || null;
+                    break;
+                }
+                case 'D': {
+                    valor = nodo.value ? new Date (
+                        nodo.value.subString (6, 10),
+                        (Number (nodo.value.subString (3, 5)) - 1).toString (),
+                        nodo.value.subString (0, 2)
+                    ) : null;
+                    break;
+                }
+            }
+        
+            return valor;
+        
+        }
+        
+        function construirChavePai (nodo, chavePai, chave) {
+            return chave === 'nodeName' ? chavePai + nodo [chave] + '.' : chavePai;
+        }
+        
+        function iterarArray (array, chavePai, tuplasInternas) {
+            array.forEach (elemento => iterarObjeto (elemento, chavePai, tuplasInternas));
+        }
+
+        function iterarObjeto (nodo, chavePai, tuplasInternas) {
+
+            if (Array.isArray (nodo)) {
+
+                iterarArray (nodo, chavePai, tuplasInternas);
+
+            } else if (nodo && typeof nodo === 'object') {
+
+                if (nodo.hasOwnProperty ('key') && nodo.hasOwnProperty ('value')) {
+
+                    let valor = recuperarValorNodo (nodo);
+                    let nomeModular = nodo.name;
+                    tuplasInternas.push ([chavePai + nodo.key, valor, nomeModular]);
+
+                } else {
+
+                    Object.keys (nodo).forEach (chave => {
+                        if (chave === 'node' || chave === 'nodeName') {
+                            const novaChavePai = construirChavePai (nodo, chavePai, chave);
+                            iterarObjeto (nodo [chave], novaChavePai, tuplasInternas);
+                        }
+                    });
+
+                }
+            }
+        }
+
+        iterarObjeto (respostaParametros.node, '', tuplas);
+        
+        return tuplas;
+
+    }
+
+    /**
+     * (METODO INTERNO) Retorna um objeto com o array das tuplas dos parametros
+     * 
+     * @param { Array <Array <String, Object, String>> } parametrosEncontrados Tuplas dos parametros
+     * @param { Array <String> } parametrosAProcurar                           Parametros a serem procurados
+     * @param { boolean } isListagemTotal                                      Indica se a listagem eh de todos os parametros     * 
+     * 
+     * @returns { Object }                                                     Objeto com os parametros encontrados
+     */
+    static _montagemSerializacaoParametros (parametrosEncontrados, parametrosAProcurar, isListagemTotal = false) {
+
+        const retornoSerializado = {};
+        const arrayNormalizado = parametrosEncontrados.flat (1);
+    
+        if (isListagemTotal) {
+    
+            for (const element of arrayNormalizado) {
+    
+                const nomeParametro  = element [0];
+                const valorParametro = element [1];
+    
+                retornoSerializado [nomeParametro] = valorParametro;
+    
+            }
+    
+        } else {
+    
+            for (const nomeParametro of parametrosAProcurar) {
+            
+                const parametro = arrayNormalizado.filter (item => {
+    
+                    const nomeParametroEncontrado   = item [0];
+                    const moduloParametroEncontrado = item [2];
+    
+                    return [ nomeParametroEncontrado, moduloParametroEncontrado ].includes (nomeParametro);
+    
+                }) [0];
+    
+                if (!parametro || parametro [1] === null || parametro [1] === undefined || parametro [1] === '') {
+                    retornoSerializado [nomeParametro] = null;
+                } else {
+                    retornoSerializado [nomeParametro] = parametro [1];
+                }
+    
+            }
+    
+        }
+    
+        return retornoSerializado;
+    
+    }
+
+    /**
+     * Retorna o valor do parametro desejado.
+     * 
+     * Os parametros podem ser buscados de forma individual ou em lote com seu nome ou chave ('br.com...').
+     * Buscamos todos os parametros de acordo com essa consulta e retornamos apenas o que tenha o valor exato
+     * do nome ou chave informado. O valor retornado eh convertido de acordo com o tipo do parametro.
+     * - Se o parametro nao for encontrado, retorna `null`.
+     * - Parametros do tipo `C` (_Lista de Opcoes_) retornam o valor da opcao selecionada da lista (nao o indice).
+     * - Parametros do tipo `D` (_Data_) retornam um objeto `Date`.
+     * - Parametros do tipo `L` (_Booleano_) retornam `true` ou `false` de acordo com `S` (Sim) ou `N` (Nao).
+     * - Parametros do tipo `I` (_Inteiro_) retornam um `Number` inteiro.
+     * - Parametros do tipo `F` (_Decimal_) retornam um `Number` decimal.
+     * - Parametros do tipo `T` (_Texto_) retornam uma `String`.
+     * 
+     * @param { String | Array <String> } nomesParametros Nome do parametro a ser buscado
+     * 
+     * @returns { Promise <Object> }                      Objeto com os parametros encontrados
+     * 
+     * @example JX.getParametro (['PERCSTCAT137SP', 'mgearmazem.gerar.nf.impureza.codImpureza', 'BASESNKPADRAO', 'ASD']).then (console.log);
+     */
+    static async getParametro (nomesParametros = '') {
+    
+        /* Validacoes */
+            if (nomesParametros === null || nomesParametros === undefined) {
+                nomesParametros = '';
+            }
+
+            const isTipoNomeParametroValido = (
+                typeof nomesParametros === 'string'
+                || Array.isArray (nomesParametros)
+            );
+            if (!isTipoNomeParametroValido) {
+                throw new Error ('Forneça o nome dos parametros a serem buscados como Texto ou Array de Textos!');
+            }
+    
+            const isAlgumNomeInvalido = (
+                Array.isArray (nomesParametros)
+                && !nomesParametros.every (item =>
+                    item != null
+                    && typeof item === 'string'
+                    && item.length
+                )
+            );
+            if (isAlgumNomeInvalido) {
+                throw new Error ('Os parametros informados devem ser Textos não vazios!');
+            }
+        /* */
+    
+        const isListagemTotal     = nomesParametros.length === 0;
+        nomesParametros           = Array.isArray (nomesParametros) && isListagemTotal ? '' : nomesParametros;
+        const isParametroUnico    = typeof nomesParametros === 'string' || nomesParametros.length === 0;
+        const parametrosAProcurar = isParametroUnico ? [ nomesParametros ] : nomesParametros;
+    
+        const nomeServico = `ManutencaoPreferenciasSP.getParametrosComoEstrutura`;
+        const url         = `${ window.location.origin }/mge/service.sbr?serviceName=${ nomeServico }&outputType=json`;
+        const dadosEnvio  = {
+            serviceName: nomeServico,
+            requestBody: {
+                param: {
+                    value: ""
+                }
+            }
+        };
+    
+        const requisicoes = parametrosAProcurar.map (async parametro => {
+    
+            dadosEnvio.requestBody.param.value = parametro;
+    
+            const resposta = await JX.post (url, dadosEnvio);
+            const parametrosEncontrados = JX._converterTuplas (resposta.responseBody.root) || [];
+    
+            return parametrosEncontrados;
+    
+        });
+
+        const parametros = (await Promise.all (requisicoes));
+        return JX._montagemSerializacaoParametros (parametros, parametrosAProcurar, isListagemTotal);
+    
+    }
+    
 }

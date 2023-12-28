@@ -32,7 +32,7 @@ class JX {
                 headers,
                 method  : 'POST',
                 redirect: 'follow',
-                body    : isJSON ? JSON.Stringify (corpo) : corpo
+                body    : isJSON ? JSON.stringify (corpo) : corpo
             });
 
             return isJSON ? resposta.json () : resposta.text ();
@@ -504,7 +504,7 @@ class JX {
                     : Number (chavesPrimarias [chave])
             });
 
-            url = url.concat (`/${ btoa (JSON.Stringify (body)) }`);
+            url = url.concat (`/${ btoa (JSON.stringify (body)) }`);
 
         }
 

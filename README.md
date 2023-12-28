@@ -25,6 +25,14 @@ Obs.: A atualização do cache do CDN da jsDelivr pode demorar até 24 horas, ou
 <script src="https://cdn.jsdelivr.net/gh/wansleynery/SankhyaJX@main/jx.min.js"></script>
 ```
 
+Para implementações ainda em estado de testes e validações, utilize a versão de desenvolvimento da branch BETA.
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/wansleynery/SankhyaJX@beta/jx.js"></script>
+<!-- ou -->
+<script src="https://cdn.jsdelivr.net/gh/wansleynery/SankhyaJX@beta/jx.min.js"></script>
+```
+
 ---
 
 ## Métodos

@@ -31,12 +31,18 @@ class JX {
 
         try {
 
+            let corpoRequisicaoFormatado = ``;
+
+            if (corpo && typeof corpo === 'object') {
+                corpoRequisicaoFormatado = JSON.stringify (corpo);
+            }
+
             const resposta = await window.fetch.bind (window) (url, {
                 headers,
                 method      : 'POST',
                 redirect    : 'follow',
                 credentials : 'include',
-                body        : isJSON ? JSON.stringify (corpo) : corpo
+                body        : corpoRequisicaoFormatado
             });
 
             if (raw) {

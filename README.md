@@ -153,7 +153,7 @@ JX.getParametro (false).then (console.log);
 
 - **chamarServico(nomeServico, dados, dadosAdicionais)**: Permite a chamada de serviços web específicos, facilitando a interação com diferentes módulos e funcionalidades do sistema.
 ```javascript
-JX.chamarServico ("mgecom@admin.getVersao", null).then (console.log);
+JX.chamarServico ("mgecom@admin.getVersao").then (console.log); // Sem corpo de envio
 JX.chamarServico ('WorkspaceSP.getStartupData', '<serviceRequest serviceName="WorkspaceSP.getStartupData"><requestBody><resourceIDs/><clientEventList/></requestBody></serviceRequest>');
 ```
 

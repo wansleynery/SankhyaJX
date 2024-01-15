@@ -852,12 +852,13 @@ class JX {
      * (METODO INTERNO) Formata a requisição para chamada de serviço.
      * 
      * @param { String } url         URL do serviço.
+     * @param { String } nomeServico Nome do serviço.
      * @param { Object } dados       Dados da requisição.
      * @param { Boolean } isJSON     Indica se a requisição é do tipo JSON.
      * 
      * @returns { [string, string] } URL formatada e corpo da requisição.
      */
-    static _formatarRequisicaoChamadaServico (url, dados, isJSON = true) {
+    static _formatarRequisicaoChamadaServico (url, nomeServico, dados, isJSON = true) {
 
         let corpoRequisicao = null;
 
@@ -866,7 +867,10 @@ class JX {
             /* Caso seja uma chamada JSON */
                 case (isJSON && dados && typeof dados === 'object'): {
                     url = `${ url }&outputType=json`;
-                    corpoRequisicao = JSON.stringify (dados);
+                    corpoRequisicao = JSON.stringify ({
+                        serviceName: nomeServico,
+                        requestBody: dados
+                    });
                     break;
                 }
                 case (isJSON && dados && typeof dados === 'string'): {
@@ -1007,7 +1011,7 @@ class JX {
         };
 
         let url                  = JX._formatarUrlChamadaServico (nomeModulo, nomeServico, aplicacaoRequisitante);
-        [ url, corpoRequisicao ] = JX._formatarRequisicaoChamadaServico (url, dados, isChamadaJson);
+        [ url, corpoRequisicao ] = JX._formatarRequisicaoChamadaServico (url, nomeServico, dados, isChamadaJson);
 
         const resposta = await JX.post (url, corpoRequisicao, {
             headers: cabecalhoFinal,

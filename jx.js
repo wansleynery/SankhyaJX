@@ -31,7 +31,7 @@ class JX {
 
         try {
 
-            let corpoRequisicaoFormatado = ``;
+            let corpoRequisicaoFormatado = corpo;
 
             if (corpo && typeof corpo === 'object') {
                 corpoRequisicaoFormatado = JSON.stringify (corpo);

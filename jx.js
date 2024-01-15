@@ -1,3 +1,5 @@
+'use strict';
+
 class JX {
 
     /***********************************************/
@@ -7,33 +9,39 @@ class JX {
     /**
      * Realiza requisicoes do tipo POST
      * 
-     * @param { String } url                 URL da requisicao
-     * @param { Object } corpo               Corpo da requisicao
-     * @param { { headers: Object } } opcoes Opcoes adicionais da requisicao
+     * @param { String } url                               URL da requisicao
+     * @param { Object } corpo                             Corpo da requisicao
+     * @param { { headers: Object, raw: boolean } } opcoes Opcoes adicionais da requisicao:
+     * - **headers**: Cabecalho da requisicao (deixe vazio para chamadas padroes JSON)
+     * - **raw**: Indica se a resposta deve ser retornada sem conversao do Fetch (padrao: false)
      * 
-     * @returns { Promise <Object> }         Resposta da requisicao
+     * @returns { Promise <Object> }                       Resposta da requisicao
      */
-    static async post (url, corpo, { headers } = { headers: {} }) {
-        
-        let tipoCorpoRequisicao = '';
+    static async post (url, corpo, { headers, raw } = { headers: {}, raw: false }) {
+
         let isJSON = true;
 
         if (headers) {
-            tipoCorpoRequisicao = headers ['Content-Type'] ? String (headers ['Content-Type']) : tipoCorpoRequisicao;
-            isJSON = tipoCorpoRequisicao.length < 1 || tipoCorpoRequisicao.includes ('json');
+            const cabecahoTipoOriginal = headers ['Content-Type'] ? String (headers ['Content-Type']) : 'application/json; charset=UTF-8';
+            isJSON = headers ['Content-Type'] ? RegExp (/json/i).exec (headers ['Content-Type']) : isJSON;
 
             headers ['Content-Type'] && delete headers ['Content-Type'];
-            headers ['Content-Type'] = !isJSON ? tipoCorpoRequisicao : 'application/json; charset=UTF-8';
+            headers ['Content-Type'] = cabecahoTipoOriginal;
         }
 
         try {
 
             const resposta = await window.fetch.bind (window) (url, {
                 headers,
-                method  : 'POST',
-                redirect: 'follow',
-                body    : isJSON ? JSON.stringify (corpo) : corpo
+                method      : 'POST',
+                redirect    : 'follow',
+                credentials : 'include',
+                body        : isJSON ? JSON.stringify (corpo) : corpo
             });
+
+            if (raw) {
+                return resposta;
+            }
 
             return isJSON ? resposta.json () : resposta.text ();
 
@@ -43,32 +51,38 @@ class JX {
     /**
      * Realiza requisicoes do tipo GET
      * 
-     * @param { String } url                 URL da requisicao
-     * @param { { headers: Object } } opcoes Opcoes adicionais da requisicao
+     * @param { String } url                               URL da requisicao
+     * @param { { headers: Object, raw: boolean } } opcoes Opcoes adicionais da requisicao:
+     * - **headers**: Cabecalho da requisicao (deixe vazio para chamadas padroes JSON)
+     * - **raw**: Indica se a resposta deve ser retornada sem conversao do Fetch (padrao: false)
      * 
-     * @returns { Promise <Object> }         Resposta da requisicao
+     * @returns { Promise <Object> }                       Resposta da requisicao
      */
-    static async get (url, { headers } = { headers: {} }) {
-        
-        let tipoCorpoRequisicao = '';
+    static async get (url, { headers, raw } = { headers: {}, raw: false }) {
+
         let isJSON = true;
 
         if (headers) {
-            tipoCorpoRequisicao = headers ['Content-Type'] ? String (headers ['Content-Type']) : tipoCorpoRequisicao;
-            isJSON = tipoCorpoRequisicao.length < 1 || tipoCorpoRequisicao.includes ('json');
+            const cabecahoTipoOriginal = headers ['Content-Type'] ? String (headers ['Content-Type']) : 'application/json; charset=UTF-8';
+            isJSON = headers ['Content-Type'] ? RegExp (/json/i).exec (headers ['Content-Type']) : isJSON;
 
             headers ['Content-Type'] && delete headers ['Content-Type'];
-            headers ['Content-Type'] = !isJSON ? tipoCorpoRequisicao : 'application/json; charset=UTF-8';
+            headers ['Content-Type'] = cabecahoTipoOriginal;
         }
 
         try {
 
             const resposta = await window.fetch.bind (window) (url, {
                 headers,
-                method  : 'GET',
-                redirect: 'follow',
-                mode    : 'no-cors'
+                method      : 'GET',
+                redirect    : 'follow',
+                credentials : 'include',
+                mode        : 'no-cors'
             });
+
+            if (raw) {
+                return resposta;
+            }
 
             return isJSON ? resposta.json () : resposta.text ();
 
@@ -516,6 +530,7 @@ class JX {
     }
 
 
+
     /**
      * Fecha a pagina atual.
      * 
@@ -550,6 +565,7 @@ class JX {
     }
 
 
+
     /**
      * Busca o valor do cookie desejado baseado no nome.
      * 
@@ -558,23 +574,23 @@ class JX {
      * - Caso seja informado o nome, porem nao exista, retorna String vazia.
      * - Caso seja informado o nome e exista, retorna o valor do cookie.
      * 
-     * @param { String } cookieName Nome do cookie desejado
+     * @param { String } nome Nome do cookie desejado
      * 
-     * @returns { String }          Conteudo do cookie desejado
+     * @returns { String }    Conteudo do cookie desejado
      */
-    static getCookie (cookieName) {
+    static getCookie (nome) {
 
-        const decodedCookie = decodeURIComponent (document.cookie);
+        const cookiesDecodificado = decodeURIComponent (document.cookie);
 
-        if (cookieName && typeof cookieName === 'string' && cookieName.length) {
-            const cookies = decodedCookie.split (';');
+        if (nome && typeof nome === 'string' && nome.length) {
+            const cookies = cookiesDecodificado.split (';');
 
             for (let cookie of cookies) {
 
-                let cookieIndex = cookie.split ('=') [0].trim ();
+                let [ nomeCookie, valorCookie ] = cookie.split ('=');
 
-                if (cookieIndex === cookieName) {
-                    return cookie.split ('=') [1];
+                if (nomeCookie.trim () === nome) {
+                    return valorCookie;
                 }
 
             }
@@ -582,8 +598,9 @@ class JX {
             return '';
         }
 
-        return decodedCookie;
+        return cookiesDecodificado;
     }
+
 
 
     /**
@@ -822,5 +839,189 @@ class JX {
         return JX._montagemSerializacaoParametros (parametros, parametrosAProcurar, isListagemTotal);
     
     }
-    
+
+
+
+    /**
+     * (METODO INTERNO) Formata a requisição para chamada de serviço.
+     * 
+     * @param { String } url         URL do serviço.
+     * @param { Object } dados       Dados da requisição.
+     * @param { Boolean } isJSON     Indica se a requisição é do tipo JSON.
+     * 
+     * @returns { [string, string] } URL formatada e corpo da requisição.
+     */
+    static _formatarRequisicaoChamadaServico (url, dados, isJSON = true) {
+
+        let corpoRequisicao = null;
+
+        switch (true) {
+
+            /* Caso seja uma chamada JSON */
+                case (isJSON && dados && typeof dados === 'object'): {
+                    url = `${ url }&outputType=json`;
+                    corpoRequisicao = JSON.stringify (dados);
+                    break;
+                }
+                case (isJSON && dados && typeof dados === 'string'): {
+                    url = `${ url }&outputType=json`;
+                    corpoRequisicao = dados;
+                    break;
+                }
+            /* */
+
+            default: {
+                corpoRequisicao = dados;
+                break;
+            }
+        }
+
+        return [ url, corpoRequisicao ];
+    }
+
+    /**
+     * (METODO INTERNO) Formata a URL para chamada de serviço.
+     * 
+     * @param { String } nomeModulo            Nome do módulo do serviço.
+     * @param { String } nomeServico           Nome do serviço.
+     * @param { String } aplicacaoRequisitante Nome da aplicação requisitante.
+     * 
+     * @returns { String }                     URL formatada para o serviço.
+     */
+    static _formatarUrlChamadaServico (
+        /** @type { String } */ nomeModulo,
+        /** @type { String } */ nomeServico,
+        /** @type { String } */ aplicacaoRequisitante
+    ) {
+
+        const token                  = JX.getCookie ('JSESSIONID').replace (/\..*/, '');
+        let url                      = `${ window.location.origin }/${ nomeModulo }/service.sbr?serviceName=${ nomeServico }&mgeSession=${ token }`;
+
+        const complementoUrl         = `&counter=1&preventTransform=false`;
+        /*____________________________TELA ACESSORA_____________RESOURCE ID */
+        const aplicacaoUrlComercial  = [`SelecaoDocumento`,       `br.com.sankhya.mgecom.mov.selecaodedocumento` ];
+        const aplicacaoUrlFinanceiro = [`MovimentacaoFinanceira`, `br.com.sankhya.fin.cad.movimentacaoFinanceira`];
+        const aplicacaoUrlServico    = [`ConsultaOS`,             `br.com.sankhya.os.mov.OrdemServico`           ];
+
+        switch (nomeModulo) {
+            case 'mgecom': {
+                url = `${ url }${ complementoUrl }&application=${ aplicacaoUrlComercial [0] }&resourceID=${ aplicacaoUrlComercial [1] }`;
+                break;
+            }
+            case 'mgefin': {
+                url = `${ url }${ complementoUrl }&application=${ aplicacaoUrlFinanceiro [0] }&resourceID=${ aplicacaoUrlFinanceiro [1] }`;
+                break;
+            }
+            case 'mgeos': {
+                url = `${ url }${ complementoUrl }&application=${ aplicacaoUrlServico [0] }&resourceID=${ aplicacaoUrlServico [1] }`;
+                break;
+            }
+            default: {
+                url = `${ url }${ complementoUrl }&application=${ aplicacaoRequisitante }`;
+                break;
+            }
+        }
+
+        return url;
+
+    }
+
+    /**
+     * Chama um serviço específico no backend Sankhya.
+     * Ele foi implementado para substituir o servico nativo ServiceProxy.callService e ser agnostico a framework.
+     * 
+     * Os modulos implementados atualmente sao:
+     * - mge    (Padrao)
+     * - mgecom (Comercial)
+     * - mgefin (Financeiro)
+     * - mgeos  (Contratos e Servico)
+     * 
+     * Caso utilize um modulo nao implementado, informe a aplicacao nos dados adicionais.
+     * 
+     * @param { String } nomeServico     Nome do serviço a ser chamado.
+     * @param { Object } dados           Dados a serem enviados na requisição.
+     * @param { Object } dadosAdicionais Dados adicionais para a requisição.
+     * - **aplicacao**: Aplicacao requisitante do serviço. _Padrao_: `workspace`
+     * - **cabecalho**: Cabecalho da requisicao. _Padrao_: `{ 'Content-Type': 'application/json; charset=UTF-8' }`
+     * 
+     * @returns { Promise <Object> }     Resposta do serviço.
+     * 
+     * @example
+     * JX.chamarServico ("mgecom@admin.getVersao", null).then (console.log);
+     */
+    static async chamarServico (nomeServico, dados, dadosAdicionais = {
+        aplicacao: 'workspace',
+        cabecalho: {
+            'Content-Type': 'application/json; charset=UTF-8'
+        }
+    }) {
+
+        let nomeModulo            = 'mge';
+        let aplicacaoRequisitante = 'workspace';
+        let corpoRequisicao       = null;
+        let cabecalhoRequisicao   = {};
+
+        /* Validacoes */
+            if (
+                !nomeServico
+                || typeof nomeServico !== 'string'
+                || nomeServico.length < 1
+            ) {
+                throw new Error ('O serviço deve ser informado!');
+            }
+        /* */
+
+        /* Desmembramento do nome do servico */
+            if (nomeServico.includes ("@")) {
+                [ nomeModulo, nomeServico ] = nomeServico.split ("@");
+            }
+        /* */
+
+        /* Desmembramento dos dados adicionais */
+            if (dadosAdicionais) {
+
+                /* Caso seja uma chamada de um modulo nao implementado (mgecom, mgefin, mgeos) */
+                aplicacaoRequisitante = dadosAdicionais.aplicacao || aplicacaoRequisitante;
+
+                /* Para chamadas em XML, obrigatoriamente deve ser informado o cabecalho da requisicao */
+                cabecalhoRequisicao   = {
+                    ...(dadosAdicionais.cabecalho ? dadosAdicionais.cabecalho : {})
+                };
+
+            }
+        /* */
+
+        const isChamadaJson = (dados && (
+            (typeof dados === 'string' && !dados.startsWith ('<'))
+            || typeof dados === 'object'
+        ));
+        const cabecalhoFinal = {
+            ...cabecalhoRequisicao,
+            'Content-Type': isChamadaJson ? 'application/json; charset=UTF-8' : 'text/xml; charset=UTF-8'
+        };
+
+        let url                  = JX._formatarUrlChamadaServico (nomeModulo, nomeServico, aplicacaoRequisitante);
+        [ url, corpoRequisicao ] = JX._formatarRequisicaoChamadaServico (url, dados, isChamadaJson);
+
+        const resposta = await JX.post (url, corpoRequisicao, {
+            headers: cabecalhoFinal,
+            raw: true
+        });
+        if (!resposta.ok) {
+            throw new Error (`[JX] Erro não identificado.`);
+        }
+
+        const dadosResposta = isChamadaJson ? await resposta.json () : await resposta.text ();
+        if ([0, 3].includes (dadosResposta.status)) {
+            throw dadosResposta;
+        }
+
+        if ([2, 4].includes (dadosResposta.status)) {
+            console.warn (`[JX] ${ dadosResposta.statusMessage }`);
+        }
+
+        return dadosResposta;
+
+    }
+
 }

@@ -359,6 +359,67 @@ class JX {
 
 
 
+
+    /**
+     * Salva ou atualiza um registro utilizando o serviço DatasetSP.save.
+     *
+     * @param { Object } dados           Dados do registro a ser salvo ou atualizado.
+     * @param { String } instancia       Nome da entidade (instância) onde o registro será salvo.
+     * @param { Object } chavesPrimarias Chaves primárias para identificação do registro (opcional).
+     *
+     * @returns { Promise <Object> }     Resposta da requisição de salvamento.
+     *
+     * @example
+     * // Para atualizar um registro existente:
+     * JX.novoSalvar({ SERIE: 'h' }, 'AD_SERIENOTAITEM', { ID: '1', IDSERIE: '2' });
+     *
+     * // Para criar um novo registro:
+     * JX.novoSalvar({ ID: '2' }, 'AD_SERIENOTAITEM');
+     */
+    static async novoSalvar (dados, instancia, chavesPrimarias) {
+
+        const url = `${ window.location.origin }/mge/service.sbr?serviceName=DatasetSP.save&outputType=json`;
+
+        // Extrai os campos dos dados fornecidos
+        const fields = Object.keys (dados).map (campo => campo.toUpperCase ());
+
+        // Mapeia os valores para um objeto com índices numéricos em formato de string
+        const valoresArray = Object.values (dados);
+        const values = {};
+        valoresArray.forEach ((valor, indice) => {
+            values [ indice.toString () ] = String (valor);
+        });
+
+        // Monta o registro, incluindo 'pk' se houver chaves primárias
+        const record = {
+            values: values
+        };
+
+        if (chavesPrimarias) {
+            const pk = {};
+            Object.keys (chavesPrimarias).forEach (chave => {
+                pk [ chave.toUpperCase () ] = String (chavesPrimarias [chave]);
+            });
+            record.pk = pk;
+        }
+
+        // Monta o corpo da requisição conforme o serviço DatasetSP.save
+        const dadosEnvio = {
+            serviceName: 'DatasetSP.save',
+            requestBody: {
+                entityName: instancia,
+                fields: fields,
+                records: [record]
+            }
+        };
+
+        // Envia a requisição usando o método post
+        return await JX.post (url, dadosEnvio);
+
+    }
+
+
+
     /**
      * Deleta o registro atual na base de dados
      * 
@@ -481,8 +542,8 @@ class JX {
 
     /**
      * Abre uma nova guia com a pagina atual
-     * 
-     * @param { boolean } forcado [opcional] Forca a abertura da nova guia
+     *
+     * @param { boolean } forcado - [Opcional] Indica se a abertura da nova guia deve ser forcada
      * 
      * @example JX.novaGuia ();
      */
@@ -614,7 +675,7 @@ class JX {
      * 
      * @param { String } caminhoArquivo Caminho do arquivo a ser carregado
      * 
-     * @returns { String }              Conteudo do arquivo
+     * @returns { Promise<Object> } Conteudo do arquivo
      */
     static getArquivo (caminhoArquivo) {
         return JX.get (caminhoArquivo, {
@@ -627,7 +688,7 @@ class JX {
     /**
      * (METODO INTERNO) Retorna um array com o nome/chave e o valor dos parametros informados
      * 
-     * @param { Object } objeto                            Objeto a ser convertido nas tuplas dos parametros
+     * @param { Object } respostaParametros Objeto a ser convertido nas tuplas dos parametros
      * 
      * @returns { Array <Array <String, Object, String>> } Tuplas dos parametros
      */
@@ -733,9 +794,7 @@ class JX {
             for (const element of arrayNormalizado) {
     
                 const nomeParametro  = element [0];
-                const valorParametro = element [1];
-    
-                retornoSerializado [nomeParametro] = valorParametro;
+                retornoSerializado [nomeParametro] = element [1];
     
             }
     
@@ -835,9 +894,7 @@ class JX {
             dadosEnvio.requestBody.param.value = parametro;
     
             const resposta = await JX.post (url, dadosEnvio);
-            const parametrosEncontrados = JX._converterTuplas (resposta.responseBody.root) || [];
-    
-            return parametrosEncontrados;
+            return JX._converterTuplas (resposta.responseBody.root) || [];
     
         });
 
@@ -860,7 +917,7 @@ class JX {
      */
     static _formatarRequisicaoChamadaServico (url, nomeServico, dados, isJSON = true) {
 
-        let corpoRequisicao = null;
+        let corpoRequisicao;
 
         switch (true) {
 
@@ -1010,7 +1067,7 @@ class JX {
             'Content-Type': isChamadaJson ? 'application/json; charset=UTF-8' : 'text/xml; charset=UTF-8'
         };
 
-        let url                  = JX._formatarUrlChamadaServico (nomeModulo, nomeServico, aplicacaoRequisitante);
+        let url = JX._formatarUrlChamadaServico (nomeModulo, nomeServico, aplicacaoRequisitante);
         [ url, corpoRequisicao ] = JX._formatarRequisicaoChamadaServico (url, nomeServico, dados, isChamadaJson);
 
         const resposta = await JX.post (url, corpoRequisicao, {

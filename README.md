@@ -24,12 +24,6 @@ Obs.: A atualização do cache do CDN da jsDelivr pode demorar até 24 horas, ou
 <script src="https://cdn.jsdelivr.net/gh/wansleynery/SankhyaJX@main/jx.min.js"></script>
 ```
 
-Para implementações ainda em estado de testes e validações, utilize a versão de desenvolvimento da branch BETA.
-
-```html
-<script src="https://cdn.jsdelivr.net/gh/wansleynery/SankhyaJX@beta/jx.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/wansleynery/SankhyaJX@beta/jx.min.js"></script>
-```
 
 ---
 
@@ -43,7 +37,7 @@ Para implementações ainda em estado de testes e validações, utilize a versã
 JX.consultar ('SELECT * FROM TGFMAR').then (console.log);
 ```
 
-- **salvar(dados, instancia, chavesPrimarias)**: Salva registros no banco. Aceita um objeto com os dados, o nome da tabela e as chaves primárias.
+- **salvar(dados, instancia, chavesPrimarias)**: Salva registros no banco com a service auxiliar (`CRUDServiceProvider.saveRecord`). Aceita um objeto com os dados, o nome da tabela e as chaves primárias.
 ```javascript
 /* Criar multiplos NOVOS registros (deixar as chaves primarias vazias) */
 JX.salvar ({ DESCRICAO: 'Qualquer Marca' }, 'MarcaProduto', [{}, {}, {}]).then (console.log);
@@ -52,6 +46,17 @@ JX.salvar ({ DESCRICAO: 'Qualquer Marca' }, 'MarcaProduto', [{}, {}, {}]).then (
 /* Repare que, intencionalmente, estou forcando o erro em apenas um dos salvamentos, */
 /* mas por nao ser blocante, ele continuara realizando os outros salvamentos com sucesso */
 JX.salvar ({ DESCRICAO: 'Outro produto' }, 'MarcaProduto', [{ CODIGO: 'asd' }, { CODIGO: 9998 }, { CODIGO: 9999 }]).then (console.log);
+```
+
+- **novoSalvar(dados, instancia, chavesPrimarias)**: (BETA) Salva registros no banco com a service oficial das telas nativas (`DatasetSP.save`). Aceita um objeto com os dados, o nome da tabela e as chaves primárias.
+```javascript
+/* Criar multiplos NOVOS registros (deixar as chaves primarias vazias) */
+JX.salvar ({ DESCRICAO: 'Qualquer Marca' }, 'MarcaProduto').then (console.log);
+
+/* Atualizar multiplos registros (informar as chaves primarias de cada registro) */
+/* Repare que, intencionalmente, estou forcando o erro em apenas um dos salvamentos, */
+/* mas por nao ser blocante, ele continuara realizando os outros salvamentos com sucesso */
+JX.salvar ({ DESCRICAO: 'Outro produto' }, 'MarcaProduto', { CODIGO: 'asd', OUTRA_PK: 9999 }).then (console.log);
 ```
 
 - **deletar(instancia, chavesPrimarias)**: Deleta registros. Requer o nome da tabela e as chaves primárias dos registros a serem excluídos.

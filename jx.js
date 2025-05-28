@@ -31,7 +31,7 @@ class JX {
 
         try {
 
-            let corpoRequisicaoFormatado = ``;
+            let corpoRequisicaoFormatado = corpo;
 
             if (corpo && typeof corpo === 'object') {
                 corpoRequisicaoFormatado = JSON.stringify (corpo);
@@ -144,6 +144,69 @@ class JX {
     
         const requisicao = await JX.post (url, dadosEnvio);
 
+        return respostaConsulta (requisicao);
+
+    }
+
+
+    /**
+     * Executa uma consulta SQL diretamente no serviço ExecQuerySP.execQuery sem a necessidade de permissão de acesso 
+     * ao DbExplorerSP.executeQuery e ao Consolidador de Dados.
+     *
+     * @param query Consulta SQL a ser executada
+     *
+     * @returns {Promise<*[]>} Resultado da consulta, retornando um array de objetos
+     *
+     * @example JX.executarConsulta ('SELECT * FROM TGFMAR WHERE CODIGO IN (1, 2, 3)');
+     */
+    static async executarConsulta (
+        /** @type { String } */ query
+    ) {
+
+
+        function respostaConsulta (resposta) {
+            let arrayResultado = [];
+            let dados = typeof resposta === 'string' ? JSON.parse (resposta) : resposta;
+
+            if (dados.data) {
+                dados = dados.data.responseBody;
+            }
+            else if (dados.responseBody) {
+                dados = dados.responseBody;
+            }
+
+            let linhas = dados.entity.line || [];
+
+            if (linhas.length) {
+                linhas.forEach (linha => {
+
+                    let registro = {};
+                    linha.column.forEach (coluna => {
+                        registro [coluna.name] = coluna.value;
+                    });
+
+                    arrayResultado.push (registro);
+
+                });
+            }
+
+            return arrayResultado;
+        }
+
+        query = query.replace (/(\r\n|\n|\r)/gm, '');
+
+        const url = `${ window.location.origin }/mge/service.sbr?serviceName=ExecQuerySP.execQuery&outputType=json`;
+        let dadosEnvio = '{' +
+            '"serviceName":"ExecQuerySP.execQuery",' +
+            '"requestBody":{' +
+                '"querydata":{' +
+                    '"query":"' + query + '"' +
+                '}' +
+            '}' +
+        '}';
+        dadosEnvio = JSON.parse (dadosEnvio);
+
+        const requisicao = await JX.post (url, dadosEnvio);
         return respostaConsulta (requisicao);
 
     }
@@ -359,6 +422,67 @@ class JX {
 
 
 
+
+    /**
+     * Salva ou atualiza um registro utilizando o serviço DatasetSP.save.
+     *
+     * @param { Object } dados           Dados do registro a ser salvo ou atualizado.
+     * @param { String } instancia       Nome da entidade (instância) onde o registro será salvo.
+     * @param { Object } chavesPrimarias Chaves primárias para identificação do registro (opcional).
+     *
+     * @returns { Promise <Object> }     Resposta da requisição de salvamento.
+     *
+     * @example
+     * // Para atualizar um registro existente:
+     * JX.novoSalvar({ SERIE: 'h' }, 'AD_SERIENOTAITEM', { ID: '1', IDSERIE: '2' });
+     *
+     * // Para criar um novo registro:
+     * JX.novoSalvar({ ID: '2' }, 'AD_SERIENOTAITEM');
+     */
+    static async novoSalvar (dados, instancia, chavesPrimarias) {
+
+        const url = `${ window.location.origin }/mge/service.sbr?serviceName=DatasetSP.save&outputType=json`;
+
+        // Extrai os campos dos dados fornecidos
+        const fields = Object.keys (dados).map (campo => campo.toUpperCase ());
+
+        // Mapeia os valores para um objeto com índices numéricos em formato de string
+        const valoresArray = Object.values (dados);
+        const values = {};
+        valoresArray.forEach ((valor, indice) => {
+            values [ indice.toString () ] = String (valor);
+        });
+
+        // Monta o registro, incluindo 'pk' se houver chaves primárias
+        const record = {
+            values: values
+        };
+
+        if (chavesPrimarias) {
+            const pk = {};
+            Object.keys (chavesPrimarias).forEach (chave => {
+                pk [ chave.toUpperCase () ] = String (chavesPrimarias [chave]);
+            });
+            record.pk = pk;
+        }
+
+        // Monta o corpo da requisição conforme o serviço DatasetSP.save
+        const dadosEnvio = {
+            serviceName: 'DatasetSP.save',
+            requestBody: {
+                entityName: instancia,
+                fields: fields,
+                records: [record]
+            }
+        };
+
+        // Envia a requisição usando o método post
+        return await JX.post (url, dadosEnvio);
+
+    }
+
+
+
     /**
      * Deleta o registro atual na base de dados
      * 
@@ -481,8 +605,8 @@ class JX {
 
     /**
      * Abre uma nova guia com a pagina atual
-     * 
-     * @param { boolean } forcado [opcional] Forca a abertura da nova guia
+     *
+     * @param { boolean } forcado - [Opcional] Indica se a abertura da nova guia deve ser forcada
      * 
      * @example JX.novaGuia ();
      */
@@ -614,7 +738,7 @@ class JX {
      * 
      * @param { String } caminhoArquivo Caminho do arquivo a ser carregado
      * 
-     * @returns { String }              Conteudo do arquivo
+     * @returns { Promise<Object> } Conteudo do arquivo
      */
     static getArquivo (caminhoArquivo) {
         return JX.get (caminhoArquivo, {
@@ -627,7 +751,7 @@ class JX {
     /**
      * (METODO INTERNO) Retorna um array com o nome/chave e o valor dos parametros informados
      * 
-     * @param { Object } objeto                            Objeto a ser convertido nas tuplas dos parametros
+     * @param { Object } respostaParametros Objeto a ser convertido nas tuplas dos parametros
      * 
      * @returns { Array <Array <String, Object, String>> } Tuplas dos parametros
      */
@@ -733,9 +857,7 @@ class JX {
             for (const element of arrayNormalizado) {
     
                 const nomeParametro  = element [0];
-                const valorParametro = element [1];
-    
-                retornoSerializado [nomeParametro] = valorParametro;
+                retornoSerializado [nomeParametro] = element [1];
     
             }
     
@@ -835,9 +957,7 @@ class JX {
             dadosEnvio.requestBody.param.value = parametro;
     
             const resposta = await JX.post (url, dadosEnvio);
-            const parametrosEncontrados = JX._converterTuplas (resposta.responseBody.root) || [];
-    
-            return parametrosEncontrados;
+            return JX._converterTuplas (resposta.responseBody.root) || [];
     
         });
 
@@ -852,21 +972,25 @@ class JX {
      * (METODO INTERNO) Formata a requisição para chamada de serviço.
      * 
      * @param { String } url         URL do serviço.
+     * @param { String } nomeServico Nome do serviço.
      * @param { Object } dados       Dados da requisição.
      * @param { Boolean } isJSON     Indica se a requisição é do tipo JSON.
      * 
      * @returns { [string, string] } URL formatada e corpo da requisição.
      */
-    static _formatarRequisicaoChamadaServico (url, dados, isJSON = true) {
+    static _formatarRequisicaoChamadaServico (url, nomeServico, dados, isJSON = true) {
 
-        let corpoRequisicao = null;
+        let corpoRequisicao;
 
         switch (true) {
 
             /* Caso seja uma chamada JSON */
                 case (isJSON && dados && typeof dados === 'object'): {
                     url = `${ url }&outputType=json`;
-                    corpoRequisicao = JSON.stringify (dados);
+                    corpoRequisicao = JSON.stringify ({
+                        serviceName: nomeServico,
+                        requestBody: dados
+                    });
                     break;
                 }
                 case (isJSON && dados && typeof dados === 'string'): {
@@ -955,12 +1079,16 @@ class JX {
      * @example
      * JX.chamarServico ("mgecom@admin.getVersao", null).then (console.log);
      */
-    static async chamarServico (nomeServico, dados, dadosAdicionais = {
-        aplicacao: 'workspace',
-        cabecalho: {
-            'Content-Type': 'application/json; charset=UTF-8'
+    static async chamarServico (
+        nomeServico,
+        dados,
+        dadosAdicionais = {
+            aplicacao: 'workspace',
+            cabecalho: {
+                'Content-Type': 'application/json; charset=UTF-8'
+            }
         }
-    }) {
+    ) {
 
         let nomeModulo            = 'mge';
         let aplicacaoRequisitante = 'workspace';
@@ -1006,8 +1134,8 @@ class JX {
             'Content-Type': isChamadaJson ? 'application/json; charset=UTF-8' : 'text/xml; charset=UTF-8'
         };
 
-        let url                  = JX._formatarUrlChamadaServico (nomeModulo, nomeServico, aplicacaoRequisitante);
-        [ url, corpoRequisicao ] = JX._formatarRequisicaoChamadaServico (url, dados, isChamadaJson);
+        let url = JX._formatarUrlChamadaServico (nomeModulo, nomeServico, aplicacaoRequisitante);
+        [ url, corpoRequisicao ] = JX._formatarRequisicaoChamadaServico (url, nomeServico, dados, isChamadaJson);
 
         const resposta = await JX.post (url, corpoRequisicao, {
             headers: cabecalhoFinal,

@@ -164,62 +164,37 @@ class JX {
     ) {
 
         function respostaConsulta (resposta) {
-            let arrayResultado = [];
+
             let dados = typeof resposta === 'string' ? JSON.parse (resposta) : resposta;
 
-            if (dados.data) {
-                dados = dados.data.responseBody;
-            }
-            else if (dados.responseBody) {
-                dados = dados.responseBody;
-            }
+            // desce até responseBody
+            dados = dados?.data?.responseBody ?? dados?.responseBody ?? dados;
 
-            let linhas = dados.entity.line || [];
+            // helper mínimo: objeto -> [obj], null/undefined -> []
+            const paraArray = alvo => Array.isArray (alvo) ? alvo : (alvo ? [alvo] : []);
 
-            // Verifica se sao multiplas linhas retornadas
-            if (Array.isArray (linhas)) {
-                linhas.forEach (linha => {
+            // protege entity/line e normaliza
+            const linhas = paraArray (dados?.entity?.line ?? []);
 
-                    let registro = {};
-                    linha.column.forEach (coluna => {
-                        registro [coluna.name] = coluna.value;
-                    });
+            // mapeia colunas (também normalizadas) para { nome: valor }
+            return linhas.map (linha => {
+                const colunas = paraArray (linha?.column);
+                return Object.fromEntries (colunas.map (c => [c.name, c.value ?? null]));
+            });
 
-                    arrayResultado.push (registro);
-
-                });
-            }
-
-            // Verifica se eh um unico registro retornado
-            else if (linhas.column) {
-
-                let registro = {};
-                linhas.column.forEach (coluna => {
-                    registro [coluna.name] = coluna.value;
-                });
-
-                arrayResultado.push (registro);
-
-            }
-
-            // Caso nao tenha retornado nada, retorna um array vazio
-            else {
-                return arrayResultado;
-            }
-
-            return arrayResultado;
         }
 
         query = query.replace (/(\r\n|\n|\r)/gm, '');
 
         const url = `${ window.location.origin }/mge/service.sbr?serviceName=ExecQuerySP.execQuery&outputType=json`;
-        let dadosEnvio = '{' +
-            '"serviceName":"ExecQuerySP.execQuery",' +
-            '"requestBody":{' +
-            '"querydata":{' +
-            '"query":"' + query + '"' +
-            '}' +
-            '}' +
+        let dadosEnvio = '' +
+            '{' +
+            '    "serviceName":"ExecQuerySP.execQuery",' +
+            '    "requestBody": {' +
+            '        "querydata": {' +
+            '            "query": "' + query + '"' +
+            '        }' +
+            '    }' +
             '}';
         dadosEnvio = JSON.parse (dadosEnvio);
 

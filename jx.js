@@ -596,10 +596,29 @@ class JX {
      */
     static novaGuia (forcado = false) {
 
-        if ((window.parent.parent.document.querySelector ('.Taskbar-container') && !forcado) || forcado) {
+        if (forcado || JX._dentroDoShell ()) {
             Object.assign (document.createElement ('a'), { target: '_blank', href: window.location.href }).click ();
         }
 
+    }
+
+    /**
+     * (METODO INTERNO) A página está rodando dentro do shell do Sankhya-W (o que
+     * tem a Taskbar), e não solta numa aba?
+     *
+     * Acessar `window.parent.parent.document` lança quando o topo é de outra
+     * origem — o que acontece com o Sankhya embarcado em portal de cliente. Sem
+     * este guard, `novaGuia`/`fecharPagina` estourariam nesse cenário em vez de
+     * simplesmente decidir que não estamos no shell.
+     *
+     * @returns { Element | null } O container da Taskbar, ou null
+     */
+    static _dentroDoShell () {
+        try {
+            return window.parent.parent.document.querySelector ('.Taskbar-container');
+        } catch (e) {
+            return null;
+        }
     }
 
 
@@ -651,9 +670,9 @@ class JX {
      * Ele verifica se a pagina atual esta dentro do Sankhya-W para fechar, senao ele fecha a aba do navegador.
      */
     static fecharPagina () {
-        if (window.parent.parent.document.querySelector ('.Taskbar-container')) {
+        if (JX._dentroDoShell ()) {
             window.parent.parent.document.querySelector (
-                'li.ListItem.AppItem.AppItem-selected div.Taskbar-icon.icon-close').click ();
+                'li.ListItem.AppItem.AppItem-selected div.Taskbar-icon.icon-close')?.click ();
         } else {
             window.close ();
         }

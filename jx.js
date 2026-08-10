@@ -675,7 +675,7 @@ class JX {
      * @returns { String }    A URL com o protocolo HTTPS ou HTTP
      */
     static getUrl (path) {
-        return `${ window.location.origin }${ path ? '/' + path.replace ('/', '') : '' }`;
+        return `${ window.location.origin }${ path ? '/' + String (path).replace (/^\/+/, '') : '' }`;
     }
 
 

@@ -540,8 +540,9 @@ class JX {
 
             if (instancia && instancia.length > 0)  {
                 JX.
-                consultar (`SELECT NUGDG FROM TSIGDG WHERE TITULO = '${ instancia }'`).
-                then (e => resolve ({ gadGetID: 'html5_z6dld', nuGdt: e [0].NUGDG, ...opcoes }));
+                consultar (`SELECT NUGDG FROM TSIGDG WHERE TITULO = '${ String (instancia).replace (/'/g, "''") }'`).
+                then (e => resolve ({ gadGetID: 'html5_z6dld', nuGdt: e?.[0]?.NUGDG ?? 0, ...opcoes })).
+                catch (() => resolve ({ gadGetID: 'html5_z6dld', nuGdt: 0, ...opcoes }));
             }
             else {
                 resolve ({ gadGetID: 'html5_z6dld', nuGdt: 0, ...opcoes });
@@ -560,19 +561,25 @@ class JX {
 
                     const url = `/mge/html5component.mge?entryPoint=${ paginaInicial }&nuGdg=${ o.nuGdt }${ opcoesUrl }`
 
-                    setTimeout (() =>
-                            window.parent.document.getElementsByClassName ('dyna-gadget') [0].innerHTML =
-                                `<iframe src="${ url }" class="gwt-Frame" style="width: 100%; height: 100%;"></iframe>`
-                        , 500);
+                    setTimeout (() => {
+                        const gadget = window.parent.document.getElementsByClassName ('dyna-gadget') [0];
+                        if (gadget) {
+                            gadget.innerHTML =
+                                `<iframe src="${ url }" class="gwt-Frame" style="width: 100%; height: 100%;"></iframe>`;
+                        }
+                    }, 500);
 
-                    setTimeout (() => document.getElementsByClassName ('popupContent').length
-                            ? document.getElementsByClassName ('popupContent') [0].parentElement.remove ()
-                            : (() => { /**/ }) ()
-                        , 20000);
+                    setTimeout (() => {
+                        const popup = document.getElementsByClassName ('popupContent') [0];
+                        popup?.parentElement?.remove ();
+                    }, 20000);
 
-                    setTimeout (() => (document.getElementById ('stndz-style').parentElement.parentElement)
-                            .getElementsByTagName ('body') [0].style.overflow = 'hidden'
-                        , 20000);
+                    setTimeout (() => {
+                        const corpo = document.getElementById ('stndz-style')
+                            ?.parentElement?.parentElement
+                            ?.getElementsByTagName ('body') [0];
+                        if (corpo) corpo.style.overflow = 'hidden';
+                    }, 20000);
                 }
             })
         );

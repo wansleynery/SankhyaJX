@@ -125,7 +125,7 @@ class JX {
             return arrayResultado;
         }
 
-        query = query.replace (/(\r\n|\n|\r)/gm, '');
+        query = query.replace (/\s*(?:\r\n|\n|\r)\s*/g, ' ').trim ();
 
         const url = `${ window.location.origin }/mge/service.sbr?serviceName=DbExplorerSP.executeQuery&outputType=json`;
         const dadosEnvio = {
@@ -175,7 +175,7 @@ class JX {
 
         }
 
-        query = query.replace (/(\r\n|\n|\r)/gm, '');
+        query = query.replace (/\s*(?:\r\n|\n|\r)\s*/g, ' ').trim ();
 
         const url = `${ window.location.origin }/mge/service.sbr?serviceName=ExecQuerySP.execQuery&outputType=json`;
         const dadosEnvio = {

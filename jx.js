@@ -19,15 +19,10 @@ class JX {
      */
     static async post (url, corpo, { headers, raw } = { headers: {}, raw: false }) {
 
-        let isJSON = true;
-
-        if (headers) {
-            const cabecahoTipoOriginal = headers ['Content-Type'] ? String (headers ['Content-Type']) : 'application/json; charset=UTF-8';
-            isJSON = headers ['Content-Type'] ? RegExp (/json/i).exec (headers ['Content-Type']) : isJSON;
-
-            headers ['Content-Type'] && delete headers ['Content-Type'];
-            headers ['Content-Type'] = cabecahoTipoOriginal;
-        }
+        headers = { ...(headers ?? {}) };
+        const tipo = headers ['Content-Type'] ? String (headers ['Content-Type']) : 'application/json; charset=UTF-8';
+        headers ['Content-Type'] = tipo;
+        const isJSON = /json/i.test (tipo);
 
         try {
 
@@ -66,15 +61,10 @@ class JX {
      */
     static async get (url, { headers, raw } = { headers: {}, raw: false }) {
 
-        let isJSON = true;
-
-        if (headers) {
-            const cabecahoTipoOriginal = headers ['Content-Type'] ? String (headers ['Content-Type']) : 'application/json; charset=UTF-8';
-            isJSON = headers ['Content-Type'] ? RegExp (/json/i).exec (headers ['Content-Type']) : isJSON;
-
-            headers ['Content-Type'] && delete headers ['Content-Type'];
-            headers ['Content-Type'] = cabecahoTipoOriginal;
-        }
+        headers = { ...(headers ?? {}) };
+        const tipo = headers ['Content-Type'] ? String (headers ['Content-Type']) : 'application/json; charset=UTF-8';
+        headers ['Content-Type'] = tipo;
+        const isJSON = /json/i.test (tipo);
 
         try {
 

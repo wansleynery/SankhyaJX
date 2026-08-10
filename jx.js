@@ -82,8 +82,7 @@ class JX {
                 headers,
                 method      : 'GET',
                 redirect    : 'follow',
-                credentials : 'include',
-                mode        : 'no-cors'
+                credentials : 'include'
             });
 
             if (raw) {

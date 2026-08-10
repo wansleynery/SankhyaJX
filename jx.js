@@ -1150,11 +1150,22 @@ class JX {
         }
 
         const dadosResposta = isChamadaJson ? await resposta.json () : await resposta.text ();
-        if ([0, 3].includes (dadosResposta.status)) {
+
+        // Normaliza statusMessage: remove prefixo "<b>Rótulo:</b><br>" gerado pelo Sankhya
+        if (dadosResposta?.statusMessage) {
+            dadosResposta.statusMessage = dadosResposta.statusMessage
+                .replace (/<b>[^<]*<\/b>\s*<br\s*\/?>\s*/i, '')
+                .replace (/<[^>]+>/g, '')
+                .trim ();
+        }
+
+        const statusNum = Number (dadosResposta.status);
+
+        if ([0, 3].includes (statusNum)) {
             throw dadosResposta;
         }
 
-        if ([2, 4].includes (dadosResposta.status)) {
+        if ([2, 4].includes (statusNum)) {
             console.warn (`[JX] ${ dadosResposta.statusMessage }`);
         }
 

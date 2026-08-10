@@ -1,5 +1,11 @@
 # SankhyaJX
 
+> 💬 **Se sente meio esquecido por aí?** Desde a migração da plataforma oficial, o diálogo
+> entre devs Sankhya ficou mais difícil. Comunidade (não oficial) no Discord:
+> **<https://discord.gg/ke8DmDKdk7>** — bons códigos, amigo!
+
+---
+
 ## Descrição
 
 A classe `JX` é uma coleção de métodos estáticos para facilitar a manipulação de requisições HTTP, manipulação de dados de banco de dados, interação com páginas web e gerenciamento de parâmetros e cookies em aplicações web. Ela oferece funcionalidades como realizar requisições POST e GET, consultar dados de banco, salvar e deletar registros, manipular elementos de páginas web, entre outras.
@@ -15,15 +21,13 @@ A instalação pode ser feita baixando o arquivo `jx.js` (Homologação e Debug)
 <script src="jx.min.js"></script> <!-- Produção -->
 ```
 
-Contudo, a forma mais prática é pegar a ultima versão atualizada do arquivo direto do repositorio do GitHub, usando o cdn do [jsDelivr](https://www.jsdelivr.com/).
+Contudo, a forma mais prática é pegar a última versão atualizada do arquivo direto do repositório do GitHub, usando o CDN do [jsDelivr](https://www.jsdelivr.com/).
 Obs.: A atualização do cache do CDN da jsDelivr pode demorar até 24 horas, ou seja, implementações recentes podem não estar disponíveis imediatamente.
-
 
 ```html
 <script src="https://cdn.jsdelivr.net/gh/wansleynery/SankhyaJX@main/jx.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/wansleynery/SankhyaJX@main/jx.min.js"></script>
 ```
-
 
 ---
 
@@ -39,31 +43,29 @@ JX.consultar ('SELECT * FROM TGFMAR').then (console.log);
 
 - **salvar(dados, instancia, chavesPrimarias)**: Salva registros no banco com a service auxiliar (`CRUDServiceProvider.saveRecord`). Aceita um objeto com os dados, o nome da tabela e as chaves primárias.
 ```javascript
-/* Criar multiplos NOVOS registros (deixar as chaves primarias vazias) */
+/* Criar múltiplos NOVOS registros (deixar as chaves primárias vazias) */
 JX.salvar ({ DESCRICAO: 'Qualquer Marca' }, 'MarcaProduto', [{}, {}, {}]).then (console.log);
 
-/* Atualizar multiplos registros (informar as chaves primarias de cada registro) */
-/* Repare que, intencionalmente, estou forcando o erro em apenas um dos salvamentos, */
-/* mas por nao ser blocante, ele continuara realizando os outros salvamentos com sucesso */
+/* Atualizar múltiplos registros (informar as chaves primárias de cada registro) */
+/* Repare que, intencionalmente, estou forçando o erro em apenas um dos salvamentos, */
+/* mas por não ser blocante, ele continuará realizando os outros salvamentos com sucesso */
 JX.salvar ({ DESCRICAO: 'Outro produto' }, 'MarcaProduto', [{ CODIGO: 'asd' }, { CODIGO: 9998 }, { CODIGO: 9999 }]).then (console.log);
 ```
 
-- **novoSalvar(dados, instancia, chavesPrimarias)**: (BETA) Salva registros no banco com a service oficial das telas nativas (`DatasetSP.save`). Aceita um objeto com os dados, o nome da tabela e as chaves primárias.
+- **novoSalvar(dados, instancia, chavesPrimarias)**: Salva um registro no banco com a service oficial das telas nativas (`DatasetSP.save`). Aceita um objeto com os dados, o nome da tabela e, opcionalmente, as chaves primárias — sem chave, cria; com chave, atualiza. Ao contrário de `salvar`, não aceita lote (um registro por chamada).
 ```javascript
-/* Criar multiplos NOVOS registros (deixar as chaves primarias vazias) */
-JX.salvar ({ DESCRICAO: 'Qualquer Marca' }, 'MarcaProduto').then (console.log);
+/* Criar um novo registro (sem chave primária) */
+JX.novoSalvar ({ ID: '2' }, 'AD_SERIENOTAITEM').then (console.log);
 
-/* Atualizar multiplos registros (informar as chaves primarias de cada registro) */
-/* Repare que, intencionalmente, estou forcando o erro em apenas um dos salvamentos, */
-/* mas por nao ser blocante, ele continuara realizando os outros salvamentos com sucesso */
-JX.salvar ({ DESCRICAO: 'Outro produto' }, 'MarcaProduto', { CODIGO: 'asd', OUTRA_PK: 9999 }).then (console.log);
+/* Atualizar um registro existente (informando a chave primária) */
+JX.novoSalvar ({ SERIE: 'h' }, 'AD_SERIENOTAITEM', { ID: '1', IDSERIE: '2' }).then (console.log);
 ```
 
 - **deletar(instancia, chavesPrimarias)**: Deleta registros. Requer o nome da tabela e as chaves primárias dos registros a serem excluídos.
 ```javascript
-/* Apaga multiplos registros (informar as chaves primarias de cada registro) */
-/* O primeiro registro nao existe (PK 9997), o que gerarara um erro nessa requisicao */
-/* mas por nao ser blocante, ele continuara realizando as outras delecoes com sucesso */
+/* Apaga múltiplos registros (informar as chaves primárias de cada registro) */
+/* O primeiro registro não existe (PK 9997), o que gerará um erro nessa requisição */
+/* mas por não ser blocante, ele continuará realizando as outras deleções com sucesso */
 JX.deletar ('MarcaProduto', [{ CODIGO: 9997 }, { CODIGO: 9998 }, { CODIGO: 9999 }]).then (console.log);
 ```
 
@@ -75,12 +77,12 @@ JX.acionarBotao (
     {
         PARAMETRO_A: 'Valor',
         Parametro_B: 'false',    // Enviar valores booleanos como string
-        pARameTRo_c: 2           // Validar o nome do parametro a ser recebido
+        pARameTRo_c: 2           // Validar o nome do parâmetro a ser recebido
     },
     {
-        tipo         : 'JS',         // Tipo do botao de acao (JS, JAVA e SQL)
-        idBotao      : 30,           // ID do botao de acao (JS, JAVA e SQL)
-        entidade     : 'TELA_TAL',   // Nome da Entidade que possui o botao de acao (apenas SQL)
+        tipo         : 'JS',         // Tipo do botão de ação (JS, JAVA e SQL)
+        idBotao      : 30,           // ID do botão de ação (JS, JAVA e SQL)
+        entidade     : 'TELA_TAL',   // Nome da Entidade que possui o botão de ação (apenas SQL)
         nomeProcedure: 'AD_PROC_TAL' // Nome da Procedure a ser executada (apenas SQL)
     }
 ).then (console.log);
@@ -111,20 +113,20 @@ JX.fecharPagina ();
 - **getUrl(path)**: Retorna a URL atual da página, permitindo adicionar um caminho específico se necessário.
 ```javascript
 /* Busca a URL origem (URL base) do local atual */
-console.log (JX.getUrl ())                                      // http://localhost/mge
+console.log (JX.getUrl ());                                     // http://localhost/mge
 console.log (JX.getUrl ('js/dashboardGrid/dashboardGrid.css')); // http://localhost/mge/js/dashboardGrid/dashboardGrid.css
 ```
 
 - **getCookie(nome)**: Retorna o valor de um cookie especificado pelo nome.
 ```javascript
-/* Busca do conteudo de um cookie */
+/* Busca do conteúdo de um cookie */
 let valorCookie = JX.getCookie ('nomeCookie');
 console.log (valorCookie);
 ```
 
 - **getArquivo(caminhoArquivo)**: Busca o conteúdo de um arquivo localizado no caminho especificado.
 ```javascript
-/* Busca do conteudo de arquivos internos */
+/* Busca do conteúdo de arquivos internos */
 JX.getArquivo ('/caminho/do/arquivo.txt')
    .then (conteudo => console.log (conteudo))
    .catch (erro => console.error (erro));
@@ -138,7 +140,7 @@ JX.getParametro (['PERCSTCAT137SP', 'mgearmazem.gerar.nf.impureza.codImpureza', 
 // {123: null}
 JX.getParametro ('123').then (console.log);
 
-// {BALANCASP2600R: false, BL-SBR140-RS232: false, BALANCASATURNO: false, MODELOCPASEMENT: 0, TOPSCPASEMENTE: null, …}
+// {BALANCASP2600R: false, BL-SBR140-RS232: false, BALANCASATURNO: false, MODELOCPASEMENT: 0, TOPSCPASEMENTE: null, …}
 JX.getParametro ().then (console.log);
 
 // ERRO: Forneça o nome dos parametros a serem buscados como Texto ou Array de Textos!

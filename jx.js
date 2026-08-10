@@ -128,8 +128,10 @@ class JX {
         query = query.replace (/(\r\n|\n|\r)/gm, '');
 
         const url = `${ window.location.origin }/mge/service.sbr?serviceName=DbExplorerSP.executeQuery&outputType=json`;
-        let dadosEnvio = `{ "serviceName": "DbExplorerSP.executeQuery", "requestBody": { "sql": "${ query }" } }`;
-        dadosEnvio = JSON.parse (dadosEnvio);
+        const dadosEnvio = {
+            serviceName: 'DbExplorerSP.executeQuery',
+            requestBody: { sql: query }
+        };
 
         const requisicao = await JX.post (url, dadosEnvio);
 
@@ -176,16 +178,10 @@ class JX {
         query = query.replace (/(\r\n|\n|\r)/gm, '');
 
         const url = `${ window.location.origin }/mge/service.sbr?serviceName=ExecQuerySP.execQuery&outputType=json`;
-        let dadosEnvio = '' +
-            '{' +
-            '    "serviceName":"ExecQuerySP.execQuery",' +
-            '    "requestBody": {' +
-            '        "querydata": {' +
-            '            "query": "' + query + '"' +
-            '        }' +
-            '    }' +
-            '}';
-        dadosEnvio = JSON.parse (dadosEnvio);
+        const dadosEnvio = {
+            serviceName: 'ExecQuerySP.execQuery',
+            requestBody: { querydata: { query } }
+        };
 
         const requisicao = await JX.post (url, dadosEnvio);
         return respostaConsulta (requisicao);

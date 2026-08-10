@@ -789,9 +789,9 @@ class JX {
                 }
                 case 'D': {
                     valor = nodo.value ? new Date (
-                        nodo.value.subString (6, 10),
-                        (Number (nodo.value.subString (3, 5)) - 1).toString (),
-                        nodo.value.subString (0, 2)
+                        nodo.value.substring (6, 10),
+                        (Number (nodo.value.substring (3, 5)) - 1).toString (),
+                        nodo.value.substring (0, 2)
                     ) : null;
                     break;
                 }

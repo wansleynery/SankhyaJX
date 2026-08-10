@@ -701,10 +701,11 @@ class JX {
 
             for (let cookie of cookies) {
 
-                let [ nomeCookie, valorCookie ] = cookie.split ('=');
+                const separador = cookie.indexOf ('=');
+                if (separador === -1) continue;
 
-                if (nomeCookie.trim () === nome) {
-                    return valorCookie;
+                if (cookie.slice (0, separador).trim () === nome) {
+                    return cookie.slice (separador + 1);
                 }
 
             }

@@ -24,15 +24,10 @@ Self-host, baixando `jx.js` (legível, para homologação/debug) ou `jx.min.js`
 ```
 
 Ou direto do CDN [jsDelivr](https://www.jsdelivr.com/), sempre com a última
-versão da branch:
+versão publicada:
 
 ```html
 <script src="https://cdn.jsdelivr.net/gh/wansleynery/SankhyaJX@main/jx.min.js"></script>
-```
-
-```html
-<!-- BETA: versão em testes, pode mudar sem aviso -->
-<script src="https://cdn.jsdelivr.net/gh/wansleynery/SankhyaJX@beta/jx.min.js"></script>
 ```
 
 O cache do jsDelivr pode levar até 24h para atualizar — um push recente nem

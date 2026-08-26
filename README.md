@@ -90,6 +90,14 @@ JX.acionarBotao (
     // tipo 'sql' também exige: entidade, nomeProcedure
 ).then (console.log);
 
+JX.novaGuia ();
+JX.abrirPagina ('br.com.sankhya.core.cad.marcas', { CODIGO: 999 });
+JX.fecharPagina ();
+```
+
+### Tela de BI em tela cheia
+
+```javascript
 JX.removerFrame ({ instancia: 'TELA_HTML5', paginaInicial: 'paginas/entidade/index.jsp' });
 
 // Sem paginaInicial: descobre o entryPoint automaticamente a partir do gadget
@@ -98,10 +106,6 @@ JX.removerFrame ({ instancia: 'TELA_HTML5' });
 // Sem nenhum argumento: so esconde a barra/titulo do gadget via CSS (provisorio,
 // util enquanto o BI ainda esta renderizando e a instancia nao e conhecida)
 JX.removerFrame ();
-
-JX.novaGuia ();
-JX.abrirPagina ('br.com.sankhya.core.cad.marcas', { CODIGO: 999 });
-JX.fecharPagina ();
 ```
 
 ### Utilitários

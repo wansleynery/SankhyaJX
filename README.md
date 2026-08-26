@@ -37,24 +37,24 @@ sempre está disponível de imediato.
 
 ## Referência rápida
 
-| Método | O que faz |
-|---|---|
-| `consultar(query)` | SQL via `DbExplorerSP.executeQuery` (exige permissão no Consolidador de Dados) |
-| `executarConsulta(query)` | SQL via `ExecQuerySP.execQuery`, sem exigir Consolidador de Dados |
-| `salvar(dados, instancia, chavesPrimarias)` | Grava via `CRUDServiceProvider.saveRecord` |
-| `novoSalvar(dados, instancia, chavesPrimarias)` | Grava via `DatasetSP.save` (serviço das telas nativas) |
-| `deletar(instancia, chavesPrimarias)` | Remove via `DatasetSP.removeRecord` |
-| `acionarBotao(dados, opcoes)` | Aciona remotamente um botão de ação (JS, Java ou SQL) |
-| `removerFrame(configuracoes)` | Tira uma tela BI da moldura de gadget, abrindo em tela cheia |
-| `novaGuia(forcado)` | Abre a página atual em nova aba |
-| `abrirPagina(resourceID, chavesPrimarias)` | Navega para outra tela dentro do Sankhya-W |
-| `fecharPagina()` | Fecha a aba/tela atual |
-| `getUrl(path)` | Monta URL absoluta a partir da origem atual |
-| `getCookie(nome)` | Lê um cookie do documento |
-| `getArquivo(caminho)` | Busca o conteúdo de um arquivo estático |
-| `getParametro(nomes)` | Lê parâmetros do sistema, já convertidos pro tipo certo |
-| `chamarServico(nome, dados, opcoes)` | Chama qualquer serviço `service.sbr`, de qualquer módulo |
-| `post(url, corpo, opcoes)` / `get(url, opcoes)` | HTTP baixo nível — a base de todos os métodos acima |
+| Método                                          | O que faz                                                                                                        |
+|-------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| `consultar(query)`                              | SQL via `DbExplorerSP.executeQuery` (exige permissão no Consolidador de Dados)                                   |
+| `executarConsulta(query)`                       | SQL via `ExecQuerySP.execQuery`, sem exigir Consolidador de Dados                                                |
+| `salvar(dados, instancia, chavesPrimarias)`     | Grava via `CRUDServiceProvider.saveRecord`                                                                       |
+| `novoSalvar(dados, instancia, chavesPrimarias)` | Grava via `DatasetSP.save` (serviço das telas nativas)                                                           |
+| `deletar(instancia, chavesPrimarias)`           | Remove via `DatasetSP.removeRecord`                                                                              |
+| `acionarBotao(dados, opcoes)`                   | Aciona remotamente um botão de ação (JS, Java ou SQL)                                                            |
+| `removerFrame(configuracoes)`                   | Tira uma tela BI da moldura de gadget, abrindo em tela cheia (sem argumentos, só esconde a barra/título via CSS) |
+| `novaGuia(forcado)`                             | Abre a página atual em nova aba                                                                                  |
+| `abrirPagina(resourceID, chavesPrimarias)`      | Navega para outra tela dentro do Sankhya-W                                                                       |
+| `fecharPagina()`                                | Fecha a aba/tela atual                                                                                           |
+| `getUrl(path)`                                  | Monta URL absoluta a partir da origem atual                                                                      |
+| `getCookie(nome)`                               | Lê um cookie do documento                                                                                        |
+| `getArquivo(caminho)`                           | Busca o conteúdo de um arquivo estático                                                                          |
+| `getParametro(nomes)`                           | Lê parâmetros do sistema, já convertidos pro tipo certo                                                          |
+| `chamarServico(nome, dados, opcoes)`            | Chama qualquer serviço `service.sbr`, de qualquer módulo                                                         |
+| `post(url, corpo, opcoes)` / `get(url, opcoes)` | HTTP baixo nível — a base de todos os métodos acima                                                              |
 
 ---
 
@@ -92,6 +92,13 @@ JX.acionarBotao (
 
 JX.removerFrame ({ instancia: 'TELA_HTML5', paginaInicial: 'paginas/entidade/index.jsp' });
 
+// Sem paginaInicial: descobre o entryPoint automaticamente a partir do gadget
+JX.removerFrame ({ instancia: 'TELA_HTML5' });
+
+// Sem nenhum argumento: so esconde a barra/titulo do gadget via CSS (provisorio,
+// util enquanto o BI ainda esta renderizando e a instancia nao e conhecida)
+JX.removerFrame ();
+
 JX.novaGuia ();
 JX.abrirPagina ('br.com.sankhya.core.cad.marcas', { CODIGO: 999 });
 JX.fecharPagina ();
@@ -100,7 +107,7 @@ JX.fecharPagina ();
 ### Utilitários
 
 ```javascript
-JX.getUrl ('js/dashboardGrid/dashboardGrid.css');   // http://host/mge/js/dashboardGrid/dashboardGrid.css
+JX.getUrl ('js/dashboardGrid/dashboardGrid.css');   // https://host/mge/js/dashboardGrid/dashboardGrid.css
 JX.getCookie ('JSESSIONID');
 JX.getArquivo ('/caminho/do/arquivo.txt').then (console.log);
 
